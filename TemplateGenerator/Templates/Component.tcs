@@ -1,0 +1,49 @@
+using System.Runtime.Intrinsics;
+using EnCS;
+
+namespace $namespace
+{
+	public partial struct $name : IComponent<$name, |$name|.Vectorized, |$name|.Array>
+	{
+		public struct Vectorized
+		{
+			$members~> public Vector256<$type> $name;<~~>\n			<~
+		}
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public struct Array
+		{
+			public const int Size = 8;
+
+			$members~>public FixedArray8<$type> $name;<~~>\n			<~
+		}
+
+		public ref struct Ref
+		{
+			$members~>public ref $type $name;<~~>\n			<~
+			
+			public Ref($members~>ref $type $name<~~>, <~)
+			{
+				$members~>this.$name = ref $name;<~~>\n				<~
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static Ref FromArray(ref Array array, int idx)
+			{
+				return new Ref($members~>ref array.$name[idx]<~~>, <~);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Velocity, Vectorized, Array>
+		{
+			return ref TArch.GetVec(ref arch);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Velocity, Vectorized, Array>
+		{
+			return ref TArch.GetSingle(ref arch);
+		}
+	}
+}

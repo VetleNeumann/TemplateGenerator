@@ -1,0 +1,40 @@
+using System.Runtime.Intrinsics;
+using System.Runtime.CompilerServices;
+using EnCS;
+
+namespace $namespace
+{
+	public partial struct $name : ISystem<$components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>
+	{
+		public void Update<TArch1>(ref ArchTypeEnumerable<TArch1, $components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~> loop)
+			where TArch1 : unmanaged, IArchType<TArch1, $components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>
+		{
+			var en = loop.GetEnumerator();
+			while (en.MoveNext())
+			{
+				var item = en.Current;
+				for (int i = 0; i < 8; i++) // TODO: Compute this value?
+				{
+					Update($components~>|$compName|.FromArray(ref item.item1Single, i)<~~>, <~);
+				}
+				Update(ref item.item1Vec);
+			}
+		}
+
+		public void Update<TArch1, TArch2>(ref ArchTypeEnumerable<TArch1, $components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~> loop)
+			where TArch1 : unmanaged, IArchType<TArch1, $components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>
+			where TArch2 : unmanaged, IArchType<TArch2, $components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>
+		{
+			var en = loop.GetEnumerator();
+			while (en.MoveNext())
+			{
+				var item = en.Current;
+				for (int i = 0; i < 8; i++) // TODO: Compute this value?
+				{
+					Update($components~>|$compName|.FromArray(ref item.item1Single, i)<~~>, <~);
+				}
+				Update(ref item.item1Vec);
+			}
+		}
+	}
+}

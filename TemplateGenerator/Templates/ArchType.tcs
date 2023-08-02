@@ -1,0 +1,22 @@
+using System.Runtime.Intrinsics;
+using System.Runtime.CompilerServices;
+using EnCS;
+
+namespace $namespace
+{
+	public partial struct $archTypeName : $archTypes~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
+	{
+		$archTypes~>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static ref |$compName|.Array IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref $archTypeName arch)
+		{
+			return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.position);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static ref |$compName|.Vectorized IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref $archTypeName arch)
+		{
+			return ref arch.position;
+		}<~
+	}
+}

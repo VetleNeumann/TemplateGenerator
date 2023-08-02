@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<!-- We don't want to reference the source generator dll directly in consuming projects -->
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<LangVersion>Latest</LangVersion>
+		<!-- Ensure we don't use any API that might be problematic -->
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	</PropertyGroup>
+
+
+	<!-- The following libraries include the source generator interfaces and types we need -->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" PrivateAssets="all" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="bin\Debug\netstandard2.0\\TemplateGenerator.dll" />
+	  <None Remove="Templates\ArchType.tcs" />
+	  <None Remove="Templates\Component.tcs" />
+	  <None Remove="Templates\System.tcs" />
+	</ItemGroup>
+
+	<!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="TemplateLanguage">
+	    <HintPath>D:\4. Projects\1. CSharp\1. Visual Studio\Tokhenizer\TemplateLanguage\bin\Release\netstandard2.0\TemplateLanguage.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Tokhenizer">
+	    <HintPath>D:\4. Projects\1. CSharp\1. Visual Studio\Tokhenizer\TemplateLanguage\bin\Release\netstandard2.0\Tokhenizer.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <EmbeddedResource Include="Templates\ArchType.tcs" />
+	  <EmbeddedResource Include="Templates\Component.tcs" />
+	  <EmbeddedResource Include="Templates\System.tcs" />
+	</ItemGroup>
+</Project>
