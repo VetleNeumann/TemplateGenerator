@@ -1,59 +1,96 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using LightLexer;
+using LightParser;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
-using TemplateLanguage;
-using Tokhenizer;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TemplateGenerator
 {
 
 	static class TemplateGeneratorHelpers
 	{
-		static TemplateRules rules = new();
-
-		public static void RegisterTemplateGenerator<T>(IncrementalGeneratorInitializationContext context, ITemplateSourceGenerator<T> generator) where T : SyntaxNode
+		static Dictionary<EngineState, IState<NodeType, EngineState>> stateDict = new()
 		{
-			var nodes = context.SyntaxProvider
+			{ EngineState.TextState,  new TextState() },
+			{ EngineState.Expression, new ExpressionState() },
+			{ EngineState.Code,       new CodeState() },
+			{ EngineState.Variable,   new VariableState() },
+		};
+
+		public static void RegisterTemplateGenerator<TNode, TContext>(IncrementalGeneratorInitializationContext generatorContext, ITemplateSourceGenerator<TNode, TContext> generator, ITemplateContext<TContext> context) where TNode : SyntaxNode
+		{
+			var nodes = generatorContext.SyntaxProvider
 				.CreateSyntaxProvider(
-					(x, _) => x is T t,
-					(x, _) => generator.Filter(x, (T)x.Node) ? (T)x.Node : null
+					(x, _) => x is TNode t,
+					(x, _) => generator.Filter(x, (TNode)x.Node) ? (TNode)x.Node : null
 				).Where(x => x is not null);
 
-			var combinaton = context.CompilationProvider.Combine(nodes.Collect());
-			context.RegisterSourceOutput(combinaton, (spc, source) => Execute(source.Left, source.Right, spc, generator));
+			var combinaton = generatorContext.CompilationProvider.Combine(nodes.Collect());
+			generatorContext.RegisterSourceOutput(combinaton, (spc, source) => context.Execute(source.Right, spc, generator));
 		}
 
-		static void Execute<T>(Compilation compilation, ImmutableArray<T> nodeArray, SourceProductionContext context, ITemplateSourceGenerator<T> generator) where T : SyntaxNode
+		public static void ExecuteGenerator<TNode, TContext>(ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode, TContext> generator, ITemplateContext<TContext> context) where TNode : SyntaxNode
 		{
 			if (nodeArray.IsDefaultOrEmpty)
 				return;
 
 			var template = ResourceReader.GetResource(generator.Template).AsSpan();
 
-			foreach (T node in nodeArray.Distinct())
+			foreach (TNode node in nodeArray.Distinct())
 			{
-				ModelStack stack = new ModelStack();
+				ModelStack<ReturnType> stack = new ModelStack<ReturnType>();
 
-				Model model = generator.CreateModel(node);
+				Model<ReturnType> model = generator.CreateModel(node, context);
 				stack.Push(model);
 
 				var result = RenderTemplate(template, stack);
-				context.AddSource(generator.GetName(node), SourceText.From(result, Encoding.UTF8));
+				generatorContext.AddSource($"{generator.GetName(node)}.g.cs", SourceText.From(result, Encoding.UTF8));
 			}
 		}
 
-		static string RenderTemplate(ReadOnlySpan<char> template, ModelStack stack)
+		public static string RenderTemplate(ReadOnlySpan<char> template, ModelStack<ReturnType> stack)
 		{
 			StringBuilder sb = new StringBuilder();
 
-			var ast = new ParsedTemplate(template, rules.GetEnumerable(template));
-			ast.RenderTo(sb, stack);
+			TokenEnumerable tokens = new TemplateRules().GetEnumerable(template);
+
+			Parser<NodeType, EngineState> parser = new(stateDict, tokens);
+			TypeResolver<NodeType, ReturnType> resolver = new(TypeResolver.ResolveType);
+
+			var nodeArr = ArrayPool<Node<NodeType>>.Shared.Rent(4096);
+			var typeArr = ArrayPool<ReturnType>.Shared.Rent(4096);
+
+			var ast = parser.GetAst(nodeArr.AsSpan());
+			int start = ast.InsertNode(NodeType.Start);
+			ast.SetRight(start);
+
+			parser.CalculateAst(ref ast, EngineState.TextState);
+
+			var types = resolver.ResolveTypes(ast.GetRoot(), ast.GetTree(), typeArr);
+
+			TemplateContext<NodeType, ReturnType> context = new()
+			{
+				txt = template,
+				nodes = ast.GetTree(),
+				returnTypes = types
+			};
+
+			var result = TemplateLanguageRules.Compute(ref context, 0, sb, stack);
+
+			if (!result.Ok)
+				throw new Exception("Template language was not ok!");
+
+			ArrayPool<Node<NodeType>>.Shared.Return(nodeArr);
+			ArrayPool<ReturnType>.Shared.Return(typeArr);
 
 			return sb.ToString();
 		}
@@ -66,7 +103,7 @@ namespace TemplateGenerator
 
 			// Get the containing syntax node for the type declaration
 			// (could be a nested type, for example)
-			SyntaxNode? potentialNamespaceParent = syntax.Parent;
+			SyntaxNode potentialNamespaceParent = syntax.Parent;
 
 			// Keep moving "out" of nested classes etc until we get to a namespace
 			// or until we run out of parents
@@ -108,9 +145,18 @@ namespace TemplateGenerator
 	{
 		public void Initialize(IncrementalGeneratorInitializationContext context)
 		{
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, new ComponentGenerator());
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, new ArchTypeGenerator());
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, new SystemGenerator());
+			var ecsContext = new EcsContext();
+			var templateContext = new TemplateContext<EcsContext>(ecsContext);
+
+			var ecsGenerator = new EcsGenerator();
+			var compGenerator = new ComponentGenerator();
+			var archTypeGenerator = new ArchTypeGenerator(ecsGenerator.Id);
+			var systemGenerator = new SystemGenerator();
+
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator, templateContext);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator, templateContext);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator, templateContext);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator, templateContext);
 		}
 	}
 }

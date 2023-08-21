@@ -1,18 +1,21 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
-using TemplateLanguage;
+using LightParser;
+using System;
 
 namespace TemplateGenerator
 {
-	interface ITemplateSourceGenerator<T> where T : SyntaxNode
+	interface ITemplateSourceGenerator<TNode, TContext> where TNode : SyntaxNode
 	{
+		Guid Id { get; }
+
 		string Template { get; }
 
-		bool Filter(GeneratorSyntaxContext context, T node);
+		bool Filter(GeneratorSyntaxContext context, TNode node);
 
-		Model CreateModel(T node);
+		Model<ReturnType> CreateModel(TNode node, ITemplateContext<TContext> context);
 
-		string GetName(T node);
+		string GetName(TNode node);
 	}
 }

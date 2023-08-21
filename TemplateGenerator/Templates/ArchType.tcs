@@ -10,13 +10,13 @@ namespace $namespace
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static ref |$compName|.Array IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref $archTypeName arch)
 		{
-			return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.position);
+			return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.$varName);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static ref |$compName|.Vectorized IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref $archTypeName arch)
 		{
-			return ref arch.position;
+			return ref arch.$varName;
 		}<~
 	}
 }

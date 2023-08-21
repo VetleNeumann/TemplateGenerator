@@ -1,14 +1,15 @@
-﻿//HintName: Position.cs
+﻿//HintName: Velocity.g.cs
 using System.Runtime.Intrinsics;
+using System.Runtime.CompilerServices;
 using EnCS;
 
 namespace Project
 {
-	public partial struct Position : IComponent<Position, Position.Vectorized, Position.Array>
+	public partial struct Velocity : IComponent<Velocity, Velocity.Vectorized, Velocity.Array>
 	{
 		public struct Vectorized
 		{
-			 public Vector256<int> x;
+			 public Vector256<float> x;
 			 public Vector256<int> y;
 			 public Vector256<int> z;
 		}
@@ -18,18 +19,18 @@ namespace Project
 		{
 			public const int Size = 8;
 
-			public FixedArray8<int> x;
+			public FixedArray8<float> x;
 			public FixedArray8<int> y;
 			public FixedArray8<int> z;
 		}
 
 		public ref struct Ref
 		{
-			public ref int x;
+			public ref float x;
 			public ref int y;
 			public ref int z;
 			
-			public Ref(ref int x, ref int y, ref int z)
+			public Ref(ref float x, ref int y, ref int z)
 			{
 				this.x = ref x;
 				this.y = ref y;

@@ -31,7 +31,7 @@ public partial struct Position
 {
 	public int x;
 	public int y;
-	public int z;
+	public FixedArray4<int> z;
 }
 
 [ComponentAttribute]
@@ -59,6 +59,12 @@ public partial class PositionSystem
 	public void Update(ref Position.Vectorized position)
 	{
 	}
+}
+
+[EcsAttribute]
+public partial struct Ecs
+{
+
 }
 ";
 			return TestHelper.Verify(source);

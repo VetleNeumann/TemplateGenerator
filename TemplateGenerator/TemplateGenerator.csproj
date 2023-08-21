@@ -3,17 +3,26 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>Latest</LangVersion>
-		<!-- Ensure we don't use any API that might be problematic -->
-		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<IsRoslynComponent>true</IsRoslynComponent>
+
 		<!-- We don't want to reference the source generator dll directly in consuming projects -->
 		<IncludeBuildOutput>false</IncludeBuildOutput>
+
+		<!-- Ensure we don't use any API that might be problematic -->
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 	</PropertyGroup>
 
 	<PropertyGroup>
 		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+		<PackageId>TemplateGen</PackageId>
+		<Version>1.0.7</Version>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="Templates\Ecs.tcs" />
+	</ItemGroup>
 
 	<!-- The following libraries include the source generator interfaces and types we need -->
 	<ItemGroup>
@@ -22,32 +31,16 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <None Remove="Templates\ArchType.tcs" />
-	  <None Remove="Templates\Component.tcs" />
-	  <None Remove="Templates\System.tcs" />
-	</ItemGroup>
-	
-	<ItemGroup>
 	  <EmbeddedResource Include="Templates\ArchType.tcs" />
 	  <EmbeddedResource Include="Templates\Component.tcs" />
+	  <EmbeddedResource Include="Templates\Ecs.tcs" />
 	  <EmbeddedResource Include="Templates\System.tcs" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <Reference Include="TemplateLanguage">
-	    <HintPath>D:\4. Projects\1. CSharp\1. Visual Studio\Tokhenizer\TemplateLanguage\bin\Release\netstandard2.0\TemplateLanguage.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Tokhenizer">
-	    <HintPath>D:\4. Projects\1. CSharp\1. Visual Studio\Tokhenizer\TemplateLanguage\bin\Release\netstandard2.0\Tokhenizer.dll</HintPath>
-	  </Reference>
 	</ItemGroup>
 
 	<Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
 		<ItemGroup>
 			<!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
 			<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-			<None Include="$(OutputPath)\TemplateLanguage.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-			<None Include="$(OutputPath)\Tokhenizer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 		</ItemGroup>
 	</Target>
 </Project>

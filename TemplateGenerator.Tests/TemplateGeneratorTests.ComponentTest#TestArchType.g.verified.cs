@@ -1,4 +1,4 @@
-﻿//HintName: TestArchType.cs
+﻿//HintName: TestArchType.g.cs
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
@@ -22,13 +22,13 @@ namespace Project
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static ref Velocity.Array IArchType<TestArchType, Velocity, Velocity.Vectorized, Velocity.Array>.GetSingle(ref TestArchType arch)
 		{
-			return ref Unsafe.As<Velocity.Vectorized, Velocity.Array>(ref arch.position);
+			return ref Unsafe.As<Velocity.Vectorized, Velocity.Array>(ref arch.velocity);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static ref Velocity.Vectorized IArchType<TestArchType, Velocity, Velocity.Vectorized, Velocity.Array>.GetVec(ref TestArchType arch)
 		{
-			return ref arch.position;
+			return ref arch.velocity;
 		}
 	}
 }

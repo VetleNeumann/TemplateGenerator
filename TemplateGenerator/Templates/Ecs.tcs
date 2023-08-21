@@ -1,0 +1,9 @@
+using EnCS;
+
+namespace $namespace
+{
+	public partial struct $name
+	{
+		$archTypes~>ArchTypeContainer<$name> container$i;<~~>\n		<~
+	}
+}

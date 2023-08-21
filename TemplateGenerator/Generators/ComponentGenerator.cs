@@ -1,79 +1,17 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using LightParser;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TemplateLanguage;
 
 namespace TemplateGenerator
 {
-	class SystemGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax>
+	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax, EcsContext>
 	{
-		public string Template => "System.tcs";
+		public Guid Id { get; } = Guid.NewGuid();
 
-		public Model CreateModel(ClassDeclarationSyntax node)
-		{
-			var model = new Model();
-			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));
-			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
-			model.Set("components".AsSpan(), Parameter.CreateEnum<IModel>(GetComponents(node)));
-
-			return model;
-		}
-
-		public bool Filter(GeneratorSyntaxContext context, ClassDeclarationSyntax node)
-		{
-			foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
-			{
-				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-				{
-					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "SystemAttribute")
-						return true;
-				}
-			}
-
-			return false;
-		}
-
-		public string GetName(ClassDeclarationSyntax node)
-		{
-			return node.Identifier.ToString();
-		}
-
-		static Model[] GetComponents(ClassDeclarationSyntax node)
-		{
-			var models = new List<Model>();
-
-			foreach (var method in node.Members.Where(x => x is MethodDeclarationSyntax).Select(x => x as MethodDeclarationSyntax))
-			{
-				if (method.Identifier.Text != "Update")
-					continue;
-
-				var model = new Model();
-				var types = new List<string>();
-
-				foreach (var parameter in method.ParameterList.Parameters)
-				{
-					var paramType = parameter.Type as QualifiedNameSyntax;
-					types.Add((paramType.Left as IdentifierNameSyntax).Identifier.Text);
-
-				}
-
-				model.Set("compName".AsSpan(), Parameter.Create(types.Distinct().First()));
-
-				models.Add(model);
-
-				// TODO: Only do first method for now
-				break;
-			}
-
-			return models.ToArray();
-		}
-	}
-
-	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax>
-	{
 		public string Template => "Component.tcs";
 
 		public bool Filter(GeneratorSyntaxContext context, StructDeclarationSyntax node)
@@ -84,18 +22,21 @@ namespace TemplateGenerator
 				{
 					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "ComponentAttribute")
 						return true;
+
+					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "Component")
+						return true;
 				}
 			}
 
 			return false;
 		}
 
-		public Model CreateModel(StructDeclarationSyntax node)
+		public Model<ReturnType> CreateModel(StructDeclarationSyntax node, ITemplateContext<EcsContext> context)
 		{
-			var model = new Model();
+			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));
 			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
-			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel>(GetMembers(node)));
+			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMembers(node)));
 
 			return model;
 		}
@@ -105,15 +46,15 @@ namespace TemplateGenerator
 			return node.Identifier.ToString();
 		}
 
-		static Model[] GetMembers(StructDeclarationSyntax node)
+		static Model<ReturnType>[] GetMembers(StructDeclarationSyntax node)
 		{
-			var models = new List<Model>();
+			var models = new List<Model<ReturnType>>();
 
 			foreach (var member in node.Members.Where(x => x is FieldDeclarationSyntax).Select(x => x as FieldDeclarationSyntax))
 			{
-				string typeName = (member.Declaration.Type as PredefinedTypeSyntax).Keyword.Text;
+				string typeName = GetTypeName(member.Declaration.Type);
 
-				var model = new Model();
+				var model = new Model<ReturnType>();
 				model.Set("name".AsSpan(), Parameter.Create(member.Declaration.Variables[0].ToString()));
 				model.Set("type".AsSpan(), Parameter.Create(typeName));
 
@@ -121,6 +62,35 @@ namespace TemplateGenerator
 			}
 
 			return models.ToArray();
+		}
+
+		static string GetTypeName<T>(T type) where T : TypeSyntax
+		{
+			if (type is PredefinedTypeSyntax predefined)
+			{
+				return predefined.Keyword.Text;
+			}
+			else if (type is GenericNameSyntax generic)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.Append(generic.Identifier.Text);
+
+				if (generic.TypeArgumentList.Arguments.Count > 0)
+				{
+					sb.Append('<');
+					foreach (TypeSyntax arg in generic.TypeArgumentList.Arguments)
+					{
+						sb.Append(GetTypeName(arg));
+					}
+					sb.Append('>');
+				}
+
+				return sb.ToString();
+			}
+			else
+			{
+				throw new Exception("Unexpected type declaration");
+			}
 		}
 	}
 }
