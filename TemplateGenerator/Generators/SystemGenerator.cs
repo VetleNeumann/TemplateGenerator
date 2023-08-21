@@ -7,13 +7,11 @@ using System.Linq;
 
 namespace TemplateGenerator
 {
-	class SystemGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax, EcsContext>
+	class SystemGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax>
 	{
-		public Guid Id { get; } = Guid.NewGuid();
-
 		public string Template => "System.tcs";
 
-		public Model<ReturnType> CreateModel(ClassDeclarationSyntax node, ITemplateContext<EcsContext> context)
+		public Model<ReturnType> CreateModel(ClassDeclarationSyntax node)
 		{
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));

@@ -6,15 +6,13 @@ using System;
 
 namespace TemplateGenerator
 {
-	interface ITemplateSourceGenerator<TNode, TContext> where TNode : SyntaxNode
+	interface ITemplateSourceGenerator<TNode> where TNode : SyntaxNode
 	{
-		Guid Id { get; }
-
 		string Template { get; }
 
 		bool Filter(GeneratorSyntaxContext context, TNode node);
 
-		Model<ReturnType> CreateModel(TNode node, ITemplateContext<TContext> context);
+		Model<ReturnType> CreateModel(TNode node);
 
 		string GetName(TNode node);
 	}

@@ -7,27 +7,18 @@ using System.Linq;
 
 namespace TemplateGenerator
 {
-	class ArchTypeGenerator : ITemplateSourceGenerator<StructDeclarationSyntax, EcsContext>
+	class ArchTypeGenerator : ITemplateSourceGenerator<StructDeclarationSyntax>
 	{
 		public Guid Id { get; } = Guid.NewGuid();
 
 		public string Template => "ArchType.tcs";
 
-		Guid toInvalidate;
-
-        public ArchTypeGenerator(Guid ecsId)
-        {
-            toInvalidate = ecsId;
-        }
-
-        public Model<ReturnType> CreateModel(StructDeclarationSyntax node, ITemplateContext<EcsContext> context)
+        public Model<ReturnType> CreateModel(StructDeclarationSyntax node)
 		{
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));
 			model.Set("archTypeName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
 			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMembers(node)));
-
-			context.Invalidate(toInvalidate);
 
 			return model;
 		}

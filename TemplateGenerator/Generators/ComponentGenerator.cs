@@ -8,10 +8,8 @@ using System.Text;
 
 namespace TemplateGenerator
 {
-	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax, EcsContext>
+	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax>
 	{
-		public Guid Id { get; } = Guid.NewGuid();
-
 		public string Template => "Component.tcs";
 
 		public bool Filter(GeneratorSyntaxContext context, StructDeclarationSyntax node)
@@ -31,7 +29,7 @@ namespace TemplateGenerator
 			return false;
 		}
 
-		public Model<ReturnType> CreateModel(StructDeclarationSyntax node, ITemplateContext<EcsContext> context)
+		public Model<ReturnType> CreateModel(StructDeclarationSyntax node)
 		{
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));

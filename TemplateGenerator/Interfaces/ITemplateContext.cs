@@ -10,7 +10,7 @@ namespace TemplateGenerator
 
 		void Invalidate(Guid id);
 
-		void Execute<TNode>(ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode, TContext> generator) where TNode : SyntaxNode;
+		void Execute<TNode>(ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode;
 
 		void ExecuteInvalidated();
 	}

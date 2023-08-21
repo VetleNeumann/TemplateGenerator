@@ -26,7 +26,7 @@ namespace TemplateGenerator
 			{ EngineState.Variable,   new VariableState() },
 		};
 
-		public static void RegisterTemplateGenerator<TNode, TContext>(IncrementalGeneratorInitializationContext generatorContext, ITemplateSourceGenerator<TNode, TContext> generator, ITemplateContext<TContext> context) where TNode : SyntaxNode
+		public static void RegisterTemplateGenerator<TNode>(IncrementalGeneratorInitializationContext generatorContext, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
 		{
 			var nodes = generatorContext.SyntaxProvider
 				.CreateSyntaxProvider(
@@ -35,10 +35,10 @@ namespace TemplateGenerator
 				).Where(x => x is not null);
 
 			var combinaton = generatorContext.CompilationProvider.Combine(nodes.Collect());
-			generatorContext.RegisterSourceOutput(combinaton, (spc, source) => context.Execute(source.Right, spc, generator));
+			generatorContext.RegisterSourceOutput(combinaton, (spc, source) => ExecuteGenerator(source.Right, spc, generator));
 		}
 
-		public static void ExecuteGenerator<TNode, TContext>(ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode, TContext> generator, ITemplateContext<TContext> context) where TNode : SyntaxNode
+		public static void ExecuteGenerator<TNode>(ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
 		{
 			if (nodeArray.IsDefaultOrEmpty)
 				return;
@@ -49,7 +49,7 @@ namespace TemplateGenerator
 			{
 				ModelStack<ReturnType> stack = new ModelStack<ReturnType>();
 
-				Model<ReturnType> model = generator.CreateModel(node, context);
+				Model<ReturnType> model = generator.CreateModel(node);
 				stack.Push(model);
 
 				var result = RenderTemplate(template, stack);
@@ -145,18 +145,15 @@ namespace TemplateGenerator
 	{
 		public void Initialize(IncrementalGeneratorInitializationContext context)
 		{
-			var ecsContext = new EcsContext();
-			var templateContext = new TemplateContext<EcsContext>(ecsContext);
-
 			var ecsGenerator = new EcsGenerator();
 			var compGenerator = new ComponentGenerator();
-			var archTypeGenerator = new ArchTypeGenerator(ecsGenerator.Id);
+			var archTypeGenerator = new ArchTypeGenerator();
 			var systemGenerator = new SystemGenerator();
 
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator, templateContext);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator, templateContext);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator, templateContext);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator, templateContext);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator);
 		}
 	}
 }

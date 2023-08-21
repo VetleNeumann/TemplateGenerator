@@ -7,18 +7,18 @@ using System.Linq;
 
 namespace TemplateGenerator
 {
-	class EcsGenerator : ITemplateSourceGenerator<StructDeclarationSyntax, EcsContext>
+	class EcsGenerator : ITemplateSourceGenerator<StructDeclarationSyntax>
 	{
 		public Guid Id { get; } = Guid.NewGuid();
 
 		public string Template => "Ecs.tcs";
 
-		public Model<ReturnType> CreateModel(StructDeclarationSyntax node, ITemplateContext<EcsContext> context)
+		public Model<ReturnType> CreateModel(StructDeclarationSyntax node)
 		{
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));
 			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
-			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMembers(node, context.Context)));
+			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMembers(node)));
 
 			return model;
 		}
@@ -45,21 +45,10 @@ namespace TemplateGenerator
 			return node.Identifier.ToString();
 		}
 
-		static Model<ReturnType>[] GetMembers(StructDeclarationSyntax node, EcsContext context)
+		static Model<ReturnType>[] GetMembers(StructDeclarationSyntax node)
 		{
 
 			var models = new List<Model<ReturnType>>();
-
-			float i = 0;
-			foreach (var member in context.archTypes)
-			{
-				var model = new Model<ReturnType>();
-				model.Set("name".AsSpan(), Parameter.Create(member));
-				model.Set("i".AsSpan(), Parameter.Create(i));
-
-				models.Add(model);
-				i++;
-			}
 
 			return models.ToArray();
 		}
