@@ -35,10 +35,10 @@ namespace TemplateGenerator
 				).Where(x => x is not null);
 
 			var combinaton = generatorContext.CompilationProvider.Combine(nodes.Collect());
-			generatorContext.RegisterSourceOutput(combinaton, (spc, source) => ExecuteGenerator(source.Right, spc, generator));
+			generatorContext.RegisterSourceOutput(combinaton, (spc, source) => ExecuteGenerator(source.Left, source.Right, spc, generator));
 		}
 
-		public static void ExecuteGenerator<TNode>(ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
+		public static void ExecuteGenerator<TNode>(Compilation compilation, ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
 		{
 			if (nodeArray.IsDefaultOrEmpty)
 				return;
@@ -49,7 +49,7 @@ namespace TemplateGenerator
 			{
 				ModelStack<ReturnType> stack = new ModelStack<ReturnType>();
 
-				Model<ReturnType> model = generator.CreateModel(node);
+				Model<ReturnType> model = generator.CreateModel(compilation, node);
 				stack.Push(model);
 
 				var result = RenderTemplate(template, stack);

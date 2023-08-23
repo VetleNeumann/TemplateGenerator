@@ -18,10 +18,10 @@ namespace TemplateGenerator
 			{
 				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
 				{
-					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "ComponentAttribute")
+					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "ComponentAttribute")
 						return true;
 
-					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "Component")
+					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "Component")
 						return true;
 				}
 			}
@@ -29,7 +29,7 @@ namespace TemplateGenerator
 			return false;
 		}
 
-		public Model<ReturnType> CreateModel(StructDeclarationSyntax node)
+		public Model<ReturnType> CreateModel(Compilation compilation, StructDeclarationSyntax node)
 		{
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));

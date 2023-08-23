@@ -12,7 +12,7 @@ namespace TemplateGenerator
 
 		bool Filter(GeneratorSyntaxContext context, TNode node);
 
-		Model<ReturnType> CreateModel(TNode node);
+		Model<ReturnType> CreateModel(Compilation compilation, TNode node);
 
 		string GetName(TNode node);
 	}

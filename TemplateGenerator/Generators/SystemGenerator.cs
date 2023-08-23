@@ -11,7 +11,7 @@ namespace TemplateGenerator
 	{
 		public string Template => "System.tcs";
 
-		public Model<ReturnType> CreateModel(ClassDeclarationSyntax node)
+		public Model<ReturnType> CreateModel(Compilation compilation, ClassDeclarationSyntax node)
 		{
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));
@@ -27,10 +27,10 @@ namespace TemplateGenerator
 			{
 				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
 				{
-					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "SystemAttribute")
+					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "SystemAttribute")
 						return true;
 
-					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "System")
+					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "System")
 						return true;
 				}
 			}

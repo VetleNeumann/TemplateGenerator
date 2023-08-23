@@ -13,10 +13,10 @@ namespace TemplateGenerator
 
 		public string Template => "ArchType.tcs";
 
-        public Model<ReturnType> CreateModel(StructDeclarationSyntax node)
+        public Model<ReturnType> CreateModel(Compilation compilation, StructDeclarationSyntax node)
 		{
 			var model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));
+			model.Set("namespace".AsSpan(), Parameter.Create(TemplateGeneratorHelpers.GetNamespace(node)));
 			model.Set("archTypeName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
 			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMembers(node)));
 
@@ -29,10 +29,10 @@ namespace TemplateGenerator
 			{
 				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
 				{
-					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "ArchTypeAttribute")
+					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "ArchTypeAttribute")
 						return true;
 
-					if ((attributeSyntax.Name as IdentifierNameSyntax).Identifier.Text == "ArchType")
+					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "ArchType")
 						return true;
 				}
 			}

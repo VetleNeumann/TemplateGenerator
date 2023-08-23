@@ -61,13 +61,64 @@ public partial class PositionSystem
 	}
 }
 
-[EcsAttribute]
+[EcsAttribute<PositionSystem>]
 public partial struct Ecs
 {
 
 }
 ";
-			return TestHelper.Verify(source);
+			string source2 = @"
+using namespace Project;
+
+public partial struct Position
+{
+	public int x;
+	public int y;
+	public FixedArray4<int> z;
+}
+
+public partial struct Velocity
+{
+	public float x;
+	public int y;
+	public int z;
+}
+
+public partial class PositionSystem
+{
+	public void Update(Position.Ref position)
+	{
+    }
+
+	public void Update(ref Position.Vectorized position)
+	{
+	}
+}
+
+public partial struct Ecs
+{
+
+}
+
+new EcsBuilder()
+	.Config(x =>
+	{
+		x.Name(""TestEcs"");
+		x.Version(0, 0, 1);
+	})
+	.ArchType(x =>
+	{
+		x.ArchType<Position, Velocity>(10);
+		x.ArchType<Position>(5);
+	})
+	.System(x =>
+	{
+		x.System<PositionSystem>();
+	})
+	.Build<Ecs>();
+";
+
+			return TestHelper.Verify(source2);
 		}
 	}
 }
