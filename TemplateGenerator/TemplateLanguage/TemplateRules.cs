@@ -197,6 +197,8 @@ namespace TemplateGenerator
 				lexer.Current == ',' ||
 				lexer.Current == '!' ||
 				lexer.Current == ':' ||
+				lexer.Current == '@' ||
+				lexer.Current == '\\' ||
 				lexer.Current == ';'))
 				lexer.Consume();
 

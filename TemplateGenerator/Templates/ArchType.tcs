@@ -4,19 +4,23 @@ using EnCS;
 
 namespace $namespace
 {
-	public partial struct $archTypeName : $archTypes~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
+	public partial struct $ecsName
 	{
-		$archTypes~>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		static ref |$compName|.Array IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref $archTypeName arch)
+		$archTypes~>public partial struct $archTypeName : $components~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
 		{
-			return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.$varName);
-		}
+			$components~>public |$compName|.Vectorized $varName;<~~>\n			<~
+			$components~>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			static ref |$compName|.Array IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref $archTypeName arch)
+			{
+				return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.$varName);
+			}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		static ref |$compName|.Vectorized IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref $archTypeName arch)
-		{
-			return ref arch.$varName;
-		}<~
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			static ref |$compName|.Vectorized IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref $archTypeName arch)
+			{
+				return ref arch.$varName;
+			}<~~>\n			<~
+		}<~~>\n\n		<~
 	}
 }

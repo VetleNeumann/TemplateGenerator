@@ -19,20 +19,5 @@ namespace $namespace
 				Update(ref item.item1Vec);
 			}
 		}
-
-		public void Update<T1Arch, T2Arch>(ref ComponentEnumerableNew<$components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<T1Arch, T2Arch> en)
-			where T1Arch : unmanaged, IArchType<T1Arch, $components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>
-			where T2Arch : unmanaged, IArchType<T2Arch, $components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>
-		{
-			while (en.MoveNext())
-			{
-				var item = en.Current;
-				for (int i = 0; i < 8; i++) // TODO: Compute this value?
-				{
-					Update($components~>|$compName|.Ref.FromArray(ref item.item1Single, i)<~~>, <~);
-				}
-				Update(ref item.item1Vec);
-			}
-		}
 	}
 }

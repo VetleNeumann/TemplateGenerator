@@ -7,56 +7,80 @@ using System.Linq;
 
 namespace TemplateGenerator
 {
-	class ArchTypeGenerator : ITemplateSourceGenerator<StructDeclarationSyntax>
+	class ArchTypeGenerator : ITemplateSourceGenerator<IdentifierNameSyntax>
 	{
 		public Guid Id { get; } = Guid.NewGuid();
 
 		public string Template => "ArchType.tcs";
 
-        public Model<ReturnType> CreateModel(Compilation compilation, StructDeclarationSyntax node)
+        public Model<ReturnType> CreateModel(Compilation compilation, IdentifierNameSyntax node)
 		{
+			var builderRoot = EcsGenerator.GetBuilderRoot(node);
+
+			var builderSteps = builderRoot.DescendantNodes()
+				.Where(x => x is MemberAccessExpressionSyntax)
+				.Cast<MemberAccessExpressionSyntax>();
+
+			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
+
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), Parameter.Create(TemplateGeneratorHelpers.GetNamespace(node)));
-			model.Set("archTypeName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
-			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMembers(node)));
+			model.Set("ecsName".AsSpan(), new Parameter<string>("Ecs"));
+			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetArchTypes(archTypeStep)));
 
 			return model;
 		}
 
-		public bool Filter(GeneratorSyntaxContext context, StructDeclarationSyntax node)
+		public bool Filter(GeneratorSyntaxContext context, IdentifierNameSyntax node)
 		{
-			foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
-			{
-				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-				{
-					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "ArchTypeAttribute")
-						return true;
-
-					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "ArchType")
-						return true;
-				}
-			}
-
-			return false;
+			return node.Identifier.Text == "EcsBuilder";
 		}
 
-		public string GetName(StructDeclarationSyntax node)
+		public string GetName(IdentifierNameSyntax node)
 		{
-			return node.Identifier.ToString();
+			return $"{EcsGenerator.GetEcsName(node)}_ArchType";
 		}
 
-		static Model<ReturnType>[] GetMembers(StructDeclarationSyntax node)
+		static List<Model<ReturnType>> GetArchTypes(MemberAccessExpressionSyntax step)
 		{
 			var models = new List<Model<ReturnType>>();
 
-			foreach (var member in node.Members.Where(x => x is FieldDeclarationSyntax).Select(x => x as FieldDeclarationSyntax))
+			var parentExpression = step.Parent as InvocationExpressionSyntax;
+			var lambda = parentExpression.ArgumentList.Arguments.Single().Expression as SimpleLambdaExpressionSyntax;
+
+			int i = 1;
+			foreach (var statement in lambda.Block.Statements.Where(x => x is ExpressionStatementSyntax).Cast<ExpressionStatementSyntax>())
 			{
-				string typeName = ((member.Declaration.Type as QualifiedNameSyntax).Left as IdentifierNameSyntax).Identifier.Text;
-				string varName = member.Declaration.Variables[0].Identifier.Text;
+				if (statement.Expression is not InvocationExpressionSyntax invocation)
+					continue;
+
+				if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
+					continue;
+
+				if (memberAccess.Name is not GenericNameSyntax genericName)
+					continue;
 
 				var model = new Model<ReturnType>();
-				model.Set("compName".AsSpan(), Parameter.Create(typeName.Split('.')[0]));
-				model.Set("varName".AsSpan(), Parameter.Create(varName));
+				model.Set("archTypeName".AsSpan(), Parameter.Create($"ArchType{i}"));
+				model.Set("components".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetComponents(genericName)));
+
+				models.Add(model);
+
+				i++;
+			}
+
+			return models;
+		}
+
+		static Model<ReturnType>[] GetComponents(GenericNameSyntax name)
+		{
+			var models = new List<Model<ReturnType>>();
+
+			foreach (IdentifierNameSyntax comp in name.TypeArgumentList.Arguments)
+			{
+				var model = new Model<ReturnType>();
+				model.Set("compName".AsSpan(), Parameter.Create(comp.Identifier.Text));
+				model.Set("varName".AsSpan(), Parameter.Create(comp.Identifier.Text));
 
 				models.Add(model);
 			}

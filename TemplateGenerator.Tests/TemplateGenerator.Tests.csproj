@@ -37,4 +37,10 @@
     <Folder Include="Files\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Files\TestFile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

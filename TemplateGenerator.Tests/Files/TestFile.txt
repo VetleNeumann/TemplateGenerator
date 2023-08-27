@@ -1,0 +1,181 @@
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Running;
+using EnCS;
+using EnCS.Attributes;
+using System;
+using System.Buffers;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
+namespace System.Runtime.CompilerServices
+{
+	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+	sealed class InterceptsLocationAttribute(string filePath, int line, int column) : Attribute
+	{
+	}
+}
+
+namespace Runner
+{
+	[ComponentAttribute]
+	partial struct Position
+	{
+		public float x;
+		public int y;
+		public int z;
+	}
+
+	[ComponentAttribute]
+	partial struct Velocity
+	{
+		public int x;
+		public int y;
+		public int z;
+	}
+
+	[ArchTypeAttribute]
+	partial struct TArchType
+	{
+		public Position.Vectorized position;
+		public Velocity.Vectorized velocity;
+	}
+
+	[ArchTypeAttribute]
+	partial struct TArchType2
+	{
+		public Position.Vectorized position;
+	}
+
+	[SystemAttribute]
+	partial class PositionSystem
+	{
+		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+
+		public void Update(Position.Ref position)
+		{
+            position.x = Random.Shared.Next(0, 100);
+            //position.x = MathF.Sqrt(position.x);
+        }
+
+		public void Update(ref Position.Vectorized position)
+		{
+            position.x = Vector256.Sqrt(position.x);
+		}
+	}
+
+	interface ISystem<TComp, TVector, TSingle>
+		where TComp : unmanaged, IComponent<TComp, TVector, TSingle>
+		where TVector : unmanaged
+		where TSingle : unmanaged
+	{
+		void Update(ref TVector vector);
+
+		void Update<T1Arch>(ref ComponentEnumerableNew<TComp, TVector, TSingle>.Enumerator<T1Arch> loop)
+			where T1Arch : unmanaged, IArchType<T1Arch, TComp, TVector, TSingle>;
+	}
+
+	/*
+	struct EcsContainerManager
+	{
+		ArchTypeContainer<TArchType> container1;
+		ArchTypeContainer<TArchType2> container2;
+
+        public EcsContainerManager()
+        {
+			container1 = new(10);
+			container2 = new(10);
+        }
+
+		public EcsContainerManager(nuint size)
+		{
+			container1 = new(size);
+			container2 = new(size);
+		}
+
+		public ComponentEnumerableNew<Position, Position.Vectorized, Position.Array>.Enumerator<TArchType, TArchType2> GetEnumerator(PositionSystem system)
+		{
+			return new(container1.AsSpan(), container2.AsSpan());
+		}
+	}
+	*/
+
+	partial struct Ecs
+	{
+
+	}
+
+	/*
+    static class Intercept
+    {
+		[InterceptsLocation(@"C:\Users\henst\source\repos\EnCS v4\Runner\Program.cs", 150, 6)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static Ecs InterceptBuild(this EcsBuilder builder)
+		{
+			return new Ecs();
+		}
+    }
+	*/
+
+    internal class Program
+	{
+		static void Main(string[] args)
+		{
+#if RELEASE
+			BenchmarkRunner.Run<PerfTests>();
+			return;
+#endif
+			new EcsBuilder()
+				.Config(x =>
+				{
+					x.Name("TestEcs");
+					x.Version(0, 0, 1);
+				})
+				.ArchType(x =>
+				{
+					x.ArchType<Position, Velocity>(10);
+					x.ArchType<Position>(5);
+				})
+				.System(x =>
+				{
+					x.System<PositionSystem>();
+				})
+				.Build<Ecs>();
+
+			PositionSystem position = new();
+
+			Ecs ecs = new();
+			ecs.Loop(position);
+			/*
+
+
+			PositionSystem system = new();
+			var e = containerManager.GetEnumerator(system);
+
+			system.Update(ref e);
+
+			//containerManager.GetEnumerable(out ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array> e2);
+
+			var e2 = containerManager.GetEnumerator(system);
+			while (e2.MoveNext())
+			{
+				var item = e2.Current;
+
+				for (int i = 0; i < Position.Array.Size; i++)
+				{
+					Console.WriteLine($"Actual: {item.item1Single.x[i]}");
+				}
+			}
+			foreach (var item in e2)
+			{
+				for (int i = 0; i < Position.Array.Size; i++)
+				{
+					Console.WriteLine($"Actual: {item.item1Single.x[i]}");
+				}
+			}
+			*/
+		}
+	}
+}

@@ -70,6 +70,7 @@ public partial struct Ecs
 			string source2 = @"
 using namespace Project;
 
+[ComponentAttribute]
 public partial struct Position
 {
 	public int x;
@@ -77,6 +78,7 @@ public partial struct Position
 	public FixedArray4<int> z;
 }
 
+[ComponentAttribute]
 public partial struct Velocity
 {
 	public float x;
@@ -84,6 +86,7 @@ public partial struct Velocity
 	public int z;
 }
 
+[SystemAttribute]
 public partial class PositionSystem
 {
 	public void Update(Position.Ref position)
@@ -95,30 +98,51 @@ public partial class PositionSystem
 	}
 }
 
+[SystemAttribute]
+public partial class VelocitySystem
+{
+	public void Update(Position.Ref position, Velocity.Ref velocity)
+	{
+    }
+
+	public void Update(ref Position.Vectorized position,ref Velocity.Vectorized velocity)
+	{
+	}
+}
+
 public partial struct Ecs
 {
 
 }
 
-new EcsBuilder()
-	.Config(x =>
+namespace Test
+{
+	static void Main()
 	{
-		x.Name(""TestEcs"");
-		x.Version(0, 0, 1);
-	})
-	.ArchType(x =>
-	{
-		x.ArchType<Position, Velocity>(10);
-		x.ArchType<Position>(5);
-	})
-	.System(x =>
-	{
-		x.System<PositionSystem>();
-	})
-	.Build<Ecs>();
+		new EcsBuilder()
+			.Config(x =>
+			{
+				x.Name(""TestEcs"");
+				x.Version(0, 0, 1);
+			})
+			.ArchType(x =>
+			{
+				x.ArchType<Position, Velocity>(10);
+				x.ArchType<Position>(5);
+			})
+			.System(x =>
+			{
+				x.System<PositionSystem>();
+				x.System<VelocitySystem>();
+			})
+			.Build<Ecs>();
+	}
+}
 ";
 
-			return TestHelper.Verify(source2);
+			var source3 = File.ReadAllText("Files/TestFile.txt");
+
+			return TestHelper.Verify(source3);
 		}
 	}
 }

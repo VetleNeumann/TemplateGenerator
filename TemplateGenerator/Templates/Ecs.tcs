@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using EnCS;
 
 namespace $namespace
@@ -5,5 +6,27 @@ namespace $namespace
 	public partial struct $name
 	{
 		$archTypes~>ArchTypeContainer<$name> container$i;<~~>\n		<~
+
+		public $name()
+		{
+			$archTypes~>container$i = new ArchTypeContainer<$name>($size);<~~>\n			<~
+		}
+
+		$systems~>public void Loop($name system)
+		{
+			$containers~>var enum|$i| = new ComponentEnumerableNew<$components~>$name, |$name|.Vectorized, |$name|.Array<~~>, <~>.Enumerator<$archType>(container|$i|.AsSpan());
+			<~
+			$containers~>system.Update(ref enum|$i|);<~~>\n			<~
+		}<~~>\n\n		<~
+	}
+
+	static class |$name|_Intercept
+	{
+		[InterceptsLocation(@"|$path|", $line, $character)]
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public static $name InterceptBuild(this EcsBuilder builder)
+		{
+			return new $name();
+		}
 	}
 }
