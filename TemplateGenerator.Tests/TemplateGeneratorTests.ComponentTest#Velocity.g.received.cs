@@ -3,15 +3,16 @@ using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
 
-namespace Runner
+namespace Project
 {
 	public partial struct Velocity : IComponent<Velocity, Velocity.Vectorized, Velocity.Array>
 	{
 		public struct Vectorized
 		{
-			 public Vector256<int> x;
-			 public Vector256<int> y;
-			 public Vector256<int> z;
+			 public Vector256<float> x;
+			 public Vector512<double> y;
+			
+			 public FixedArray2<Vector512<decimal>> z;
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
@@ -19,18 +20,18 @@ namespace Runner
 		{
 			public const int Size = 8;
 
-			public FixedArray8<int> x;
-			public FixedArray8<int> y;
-			public FixedArray8<int> z;
+			public FixedArray8<float> x;
+			public FixedArray8<double> y;
+			public FixedArray8<decimal> z;
 		}
 
 		public ref struct Ref
 		{
-			public ref int x;
-			public ref int y;
-			public ref int z;
+			public ref float x;
+			public ref double y;
+			public ref decimal z;
 			
-			public Ref(ref int x, ref int y, ref int z)
+			public Ref(ref float x, ref double y, ref decimal z)
 			{
 				this.x = ref x;
 				this.y = ref y;

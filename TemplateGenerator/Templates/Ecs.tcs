@@ -12,7 +12,8 @@ namespace $namespace
 			$archTypes~>container$i = new ArchTypeContainer<$name>($size);<~~>\n			<~
 		}
 
-		$systems~>public void Loop($name system)
+		$systems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Loop($name system)
 		{
 			$containers~>var enum|$i| = new ComponentEnumerableNew<$components~>$name, |$name|.Vectorized, |$name|.Array<~~>, <~>.Enumerator<$archType>(container|$i|.AsSpan());
 			<~
@@ -23,6 +24,7 @@ namespace $namespace
 	static class |$name|_Intercept
 	{
 		[InterceptsLocation(@"|$path|", $line, $character)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public static $name InterceptBuild(this EcsBuilder builder)
 		{

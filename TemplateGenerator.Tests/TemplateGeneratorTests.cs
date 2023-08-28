@@ -82,8 +82,8 @@ public partial struct Position
 public partial struct Velocity
 {
 	public float x;
-	public int y;
-	public int z;
+	public double y;
+	public decimal z;
 }
 
 [SystemAttribute]
@@ -142,7 +142,7 @@ namespace Test
 
 			var source3 = File.ReadAllText("Files/TestFile.txt");
 
-			return TestHelper.Verify(source3);
+			return TestHelper.Verify(source2);
 		}
 	}
 }

@@ -9,8 +9,8 @@ namespace Test
 	{
 		public partial struct ArchType1 : IArchType<ArchType1, Position, Position.Vectorized, Position.Array>, IArchType<ArchType1, Velocity, Velocity.Vectorized, Velocity.Array>
 		{
-			public Position.Vectorized Position
-			public Velocity.Vectorized Velocity
+			public Position.Vectorized Position;
+			public Velocity.Vectorized Velocity;
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			static ref Position.Array IArchType<ArchType1, Position, Position.Vectorized, Position.Array>.GetSingle(ref ArchType1 arch)
@@ -39,7 +39,7 @@ namespace Test
 
 		public partial struct ArchType2 : IArchType<ArchType2, Position, Position.Vectorized, Position.Array>
 		{
-			public Position.Vectorized Position
+			public Position.Vectorized Position;
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			static ref Position.Array IArchType<ArchType2, Position, Position.Vectorized, Position.Array>.GetSingle(ref ArchType2 arch)

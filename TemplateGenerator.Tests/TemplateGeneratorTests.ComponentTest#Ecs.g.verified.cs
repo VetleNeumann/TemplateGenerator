@@ -15,6 +15,7 @@ namespace Test
 			container2 = new ArchTypeContainer<ArchType2>(5);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Loop(PositionSystem system)
 		{
 			var enum1 = new ComponentEnumerableNew<Position, Position.Vectorized, Position.Array>.Enumerator<ArchType1>(container1.AsSpan());
@@ -24,6 +25,7 @@ namespace Test
 			system.Update(ref enum2);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Loop(VelocitySystem system)
 		{
 			var enum1 = new ComponentEnumerableNew<Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array>.Enumerator<ArchType1>(container1.AsSpan());
@@ -34,7 +36,8 @@ namespace Test
 
 	static class Ecs_Intercept
 	{
-		[InterceptsLocation(@"", 52, 2)]
+		[InterceptsLocation(@"", 69, 5)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public static Ecs InterceptBuild(this EcsBuilder builder)
 		{

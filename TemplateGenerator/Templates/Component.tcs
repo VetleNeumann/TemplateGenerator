@@ -8,7 +8,8 @@ namespace $namespace
 	{
 		public struct Vectorized
 		{
-			$members~> public Vector256<$type> $name;<~~>\n			<~
+			$members|$arraySize < 2|~> public Vector|$bits|<$type> $name;<~~>\n			<~
+			$members|$arraySize > 1|~> public FixedArray|$arraySize|<Vector|$bits|<$type>> $name;<~~>\n			<~
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]

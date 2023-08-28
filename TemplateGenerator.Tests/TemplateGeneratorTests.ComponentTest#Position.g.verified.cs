@@ -11,7 +11,8 @@ namespace Project
 		{
 			 public Vector256<int> x;
 			 public Vector256<int> y;
-			 public Vector256<FixedArray4<int>> z;
+			
+			 public FixedArray4<Vector256<FixedArray4<int>>> z;
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
