@@ -60,8 +60,14 @@ namespace TemplateGenerator
 				if (memberAccess.Name is not GenericNameSyntax genericName)
 					continue;
 
+				if (genericName.Identifier.Text != "ArchType")
+					continue;
+
+				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
+				var nameToken = nameArg.Token.ValueText;
+
 				var model = new Model<ReturnType>();
-				model.Set("archTypeName".AsSpan(), Parameter.Create($"ArchType{i}"));
+				model.Set("archTypeName".AsSpan(), Parameter.Create(nameToken));
 				model.Set("components".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetComponents(genericName)));
 
 				models.Add(model);

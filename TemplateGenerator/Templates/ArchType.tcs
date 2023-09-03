@@ -6,7 +6,7 @@ namespace $namespace
 {
 	public partial struct $ecsName
 	{
-		$archTypes~>public partial struct $archTypeName : $components~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
+		$archTypes~>public struct $archTypeName : $components~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
 		{
 			$components~>public |$compName|.Vectorized $varName;<~~>\n			<~
 			$components~>

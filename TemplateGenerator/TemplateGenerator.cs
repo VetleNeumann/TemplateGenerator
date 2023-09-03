@@ -149,10 +149,12 @@ namespace TemplateGenerator
 			var compGenerator = new ComponentGenerator();
 			var archTypeGenerator = new ArchTypeGenerator();
 			var systemGenerator = new SystemGenerator();
+			var worldGenerator = new WorldGenerator();
 
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, worldGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator);
 		}
 	}

@@ -1,6 +1,7 @@
 ﻿using LightParser;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace TemplateGenerator
@@ -78,6 +79,25 @@ namespace TemplateGenerator
 		public static Parameter<T> Create<T>(T value)
 		{
 			return new Parameter<T>(value);
+		}
+	}
+
+	static class ModelLinqExtesions
+	{
+		public static IEnumerable<IParameter<ReturnType>> ToParameter<T>(this IEnumerable<T> e)
+		{
+			return e.Select(x => Parameter.Create(x));
+		}
+
+		public static IEnumerable<IModel<ReturnType>> ToModel(this IEnumerable<IParameter<ReturnType>> e, string paramName)
+		{
+			return e.Select(x =>
+			{
+				var model = new Model<ReturnType>();
+				model.Set(paramName.AsSpan(), x);
+
+				return model;
+			});
 		}
 	}
 }

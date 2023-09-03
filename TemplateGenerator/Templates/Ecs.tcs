@@ -5,19 +5,17 @@ namespace $namespace
 {
 	public partial struct $name
 	{
-		$archTypes~>ArchTypeContainer<$name> container$i;<~~>\n		<~
+		$worlds~>$worldName world|$worldName|;<~~>\n		<~
 
 		public $name()
 		{
-			$archTypes~>container$i = new ArchTypeContainer<$name>($size);<~~>\n			<~
+			$worlds~>world|$worldName| = new $worldName();<~~>\n			<~
 		}
 
-		$systems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Loop($name system)
+		$worlds~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public ref $worldName Get|$worldName|()
 		{
-			$containers~>var enum|$i| = new ComponentEnumerableNew<$components~>$name, |$name|.Vectorized, |$name|.Array<~~>, <~>.Enumerator<$archType>(container|$i|.AsSpan());
-			<~
-			$containers~>system.Update(ref enum|$i|);<~~>\n			<~
+			return ref world|$worldName|;
 		}<~~>\n\n		<~
 	}
 

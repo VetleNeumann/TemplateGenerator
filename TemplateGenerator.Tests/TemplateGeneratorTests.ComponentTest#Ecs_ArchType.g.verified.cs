@@ -7,48 +7,48 @@ namespace Test
 {
 	public partial struct Ecs
 	{
-		public partial struct ArchType1 : IArchType<ArchType1, Position, Position.Vectorized, Position.Array>, IArchType<ArchType1, Velocity, Velocity.Vectorized, Velocity.Array>
+		public struct Wall : IArchType<Wall, Position, Position.Vectorized, Position.Array>, IArchType<Wall, Velocity, Velocity.Vectorized, Velocity.Array>
 		{
 			public Position.Vectorized Position;
 			public Velocity.Vectorized Velocity;
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Position.Array IArchType<ArchType1, Position, Position.Vectorized, Position.Array>.GetSingle(ref ArchType1 arch)
+			static ref Position.Array IArchType<Wall, Position, Position.Vectorized, Position.Array>.GetSingle(ref Wall arch)
 			{
 				return ref Unsafe.As<Position.Vectorized, Position.Array>(ref arch.Position);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Position.Vectorized IArchType<ArchType1, Position, Position.Vectorized, Position.Array>.GetVec(ref ArchType1 arch)
+			static ref Position.Vectorized IArchType<Wall, Position, Position.Vectorized, Position.Array>.GetVec(ref Wall arch)
 			{
 				return ref arch.Position;
 			}
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Velocity.Array IArchType<ArchType1, Velocity, Velocity.Vectorized, Velocity.Array>.GetSingle(ref ArchType1 arch)
+			static ref Velocity.Array IArchType<Wall, Velocity, Velocity.Vectorized, Velocity.Array>.GetSingle(ref Wall arch)
 			{
 				return ref Unsafe.As<Velocity.Vectorized, Velocity.Array>(ref arch.Velocity);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Velocity.Vectorized IArchType<ArchType1, Velocity, Velocity.Vectorized, Velocity.Array>.GetVec(ref ArchType1 arch)
+			static ref Velocity.Vectorized IArchType<Wall, Velocity, Velocity.Vectorized, Velocity.Array>.GetVec(ref Wall arch)
 			{
 				return ref arch.Velocity;
 			}
 		}
 
-		public partial struct ArchType2 : IArchType<ArchType2, Position, Position.Vectorized, Position.Array>
+		public struct Tile : IArchType<Tile, Position, Position.Vectorized, Position.Array>
 		{
 			public Position.Vectorized Position;
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Position.Array IArchType<ArchType2, Position, Position.Vectorized, Position.Array>.GetSingle(ref ArchType2 arch)
+			static ref Position.Array IArchType<Tile, Position, Position.Vectorized, Position.Array>.GetSingle(ref Tile arch)
 			{
 				return ref Unsafe.As<Position.Vectorized, Position.Array>(ref arch.Position);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Position.Vectorized IArchType<ArchType2, Position, Position.Vectorized, Position.Array>.GetVec(ref ArchType2 arch)
+			static ref Position.Vectorized IArchType<Tile, Position, Position.Vectorized, Position.Array>.GetVec(ref Tile arch)
 			{
 				return ref arch.Position;
 			}

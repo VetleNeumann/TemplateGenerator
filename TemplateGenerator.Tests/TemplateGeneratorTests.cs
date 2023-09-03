@@ -120,20 +120,20 @@ namespace Test
 	static void Main()
 	{
 		new EcsBuilder()
-			.Config(x =>
-			{
-				x.Name(""TestEcs"");
-				x.Version(0, 0, 1);
-			})
 			.ArchType(x =>
 			{
-				x.ArchType<Position, Velocity>(10);
-				x.ArchType<Position>(5);
+				x.ArchType<Position, Velocity>(""Wall"");
+				x.ArchType<Position>(""Tile"");
 			})
 			.System(x =>
 			{
 				x.System<PositionSystem>();
 				x.System<VelocitySystem>();
+			})
+			.World(x =>
+			{
+				x.World<Wall, Tile>(""Main"");
+				x.World<Wall>(""World2"");
 			})
 			.Build<Ecs>();
 	}

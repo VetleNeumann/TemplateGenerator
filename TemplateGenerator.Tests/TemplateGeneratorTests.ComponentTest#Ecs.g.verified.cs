@@ -6,31 +6,25 @@ namespace Test
 {
 	public partial struct Ecs
 	{
-		ArchTypeContainer<ArchType1> container1;
-		ArchTypeContainer<ArchType2> container2;
+		Main worldMain;
+		World2 worldWorld2;
 
 		public Ecs()
 		{
-			container1 = new ArchTypeContainer<ArchType1>(10);
-			container2 = new ArchTypeContainer<ArchType2>(5);
+			worldMain = new Main();
+			worldWorld2 = new World2();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Loop(PositionSystem system)
+		public ref Main GetMain()
 		{
-			var enum1 = new ComponentEnumerableNew<Position, Position.Vectorized, Position.Array>.Enumerator<ArchType1>(container1.AsSpan());
-			var enum2 = new ComponentEnumerableNew<Position, Position.Vectorized, Position.Array>.Enumerator<ArchType2>(container2.AsSpan());
-			
-			system.Update(ref enum1);
-			system.Update(ref enum2);
+			return ref worldMain;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Loop(VelocitySystem system)
+		public ref World2 GetWorld2()
 		{
-			var enum1 = new ComponentEnumerableNew<Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array>.Enumerator<ArchType1>(container1.AsSpan());
-			
-			system.Update(ref enum1);
+			return ref worldWorld2;
 		}
 	}
 
