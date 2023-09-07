@@ -4,9 +4,9 @@ using EnCS;
 
 namespace $namespace
 {
-	public partial struct $ecsName
+	public partial class $ecsName
 	{
-		$worlds~>public struct $worldName
+		$worlds~>public class $worldName
 		{
 			$archTypes~>ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n			<~
 
@@ -16,9 +16,15 @@ namespace $namespace
 			}
 
 			$archTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public Ref<$archTypeName> Create(in $archTypeName data)
+			public ArchRef<$archTypeName> Create(in |$archTypeName|.Ref data)
 			{
 				return container|$archTypeName|.Create(data);
+			}
+			
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public |$archTypeName|.Ref Get(in ArchRef<$archTypeName> ptr)
+			{
+				return container|$archTypeName|.Get(ptr);
 			}<~~>\n\n			<~
 
 			$systems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -4,7 +4,7 @@ using EnCS;
 
 namespace Test
 {
-	public partial struct Ecs
+	public partial class Ecs
 	{
 		Main worldMain;
 		World2 worldWorld2;

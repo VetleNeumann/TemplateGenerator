@@ -1,0 +1,9 @@
+--- MAIN FEATURES ---
+* Ability to create components
+
+--- IMPROVMENTS ---
+* Ecs will scale with component creation
+* Optional fixed size container for optimal perf?
+
+-- BUGS --
+* Fix bug where ecs not generating when builder returning to variable

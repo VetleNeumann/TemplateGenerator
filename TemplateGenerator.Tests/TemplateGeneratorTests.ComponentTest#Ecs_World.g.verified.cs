@@ -5,9 +5,9 @@ using EnCS;
 
 namespace Test
 {
-	public partial struct Ecs
+	public partial class Ecs
 	{
-		public struct Main
+		public class Main
 		{
 			ArchTypeContainer<Wall> containerWall;
 			ArchTypeContainer<Tile> containerTile;
@@ -19,15 +19,27 @@ namespace Test
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public Ref<Wall> Create(in Wall data)
+			public ArchRef<Wall> Create(in Wall.Ref data)
 			{
 				return containerWall.Create(data);
 			}
+			
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public Wall.Ref Get(in ArchRef<Wall> ptr)
+			{
+				return containerWall.Get(ptr);
+			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public Ref<Tile> Create(in Tile data)
+			public ArchRef<Tile> Create(in Tile.Ref data)
 			{
 				return containerTile.Create(data);
+			}
+			
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public Tile.Ref Get(in ArchRef<Tile> ptr)
+			{
+				return containerTile.Get(ptr);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,7 +61,7 @@ namespace Test
 			}
 		}
 
-		public struct World2
+		public class World2
 		{
 			ArchTypeContainer<Wall> containerWall;
 
@@ -59,9 +71,15 @@ namespace Test
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public Ref<Wall> Create(in Wall data)
+			public ArchRef<Wall> Create(in Wall.Ref data)
 			{
 				return containerWall.Create(data);
+			}
+			
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public Wall.Ref Get(in ArchRef<Wall> ptr)
+			{
+				return containerWall.Get(ptr);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

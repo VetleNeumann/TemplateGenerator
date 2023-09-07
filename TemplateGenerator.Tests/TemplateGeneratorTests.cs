@@ -132,8 +132,8 @@ namespace Test
 			})
 			.World(x =>
 			{
-				x.World<Wall, Tile>(""Main"");
-				x.World<Wall>(""World2"");
+				x.World<Ecs.Wall, Ecs.Tile>(""Main"");
+				x.World<Ecs.Wall>(""World2"");
 			})
 			.Build<Ecs>();
 	}

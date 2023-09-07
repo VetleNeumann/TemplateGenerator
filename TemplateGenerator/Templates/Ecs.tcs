@@ -3,7 +3,7 @@ using EnCS;
 
 namespace $namespace
 {
-	public partial struct $name
+	public partial class $name
 	{
 		$worlds~>$worldName world|$worldName|;<~~>\n		<~
 

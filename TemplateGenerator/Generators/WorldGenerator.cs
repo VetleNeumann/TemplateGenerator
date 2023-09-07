@@ -91,9 +91,19 @@ namespace TemplateGenerator
 		{
 			var archTypes = new List<string>();
 
-			foreach (IdentifierNameSyntax comp in name.TypeArgumentList.Arguments)
+			foreach (TypeSyntax comp in name.TypeArgumentList.Arguments)
 			{
-				archTypes.Add(comp.Identifier.Text);
+				if (comp is IdentifierNameSyntax ident)
+				{
+					archTypes.Add(ident.Identifier.Text);
+					continue;
+				}
+				else if (comp is QualifiedNameSyntax qual)
+				{
+					var right = qual.Right as IdentifierNameSyntax;
+					archTypes.Add(right.Identifier.Text);
+					continue;
+				}
 			}
 
 			return archTypes;
