@@ -38,50 +38,6 @@ public partial struct Position
 public partial struct Velocity
 {
 	public float x;
-	public int y;
-	public int z;
-}
-
-[ArchTypeAttribute]
-public partial struct TestArchType
-{
-	public Position.Vectorized position;
-	public Velocity.Vectorized velocity;
-}
-
-[SystemAttribute]
-public partial class PositionSystem
-{
-	public void Update(Position.Ref position)
-	{
-    }
-
-	public void Update(ref Position.Vectorized position)
-	{
-	}
-}
-
-[EcsAttribute<PositionSystem>]
-public partial struct Ecs
-{
-
-}
-";
-			string source2 = @"
-using namespace Project;
-
-[ComponentAttribute]
-public partial struct Position
-{
-	public int x;
-	public int y;
-	public FixedArray4<int> z;
-}
-
-[ComponentAttribute]
-public partial struct Velocity
-{
-	public float x;
 	public double y;
 	public decimal z;
 }
@@ -96,6 +52,10 @@ public partial class PositionSystem
 	public void Update(ref Position.Vectorized position)
 	{
 	}
+
+	public void UpdateAfter(Position.Ref position)
+	{
+    }
 }
 
 [SystemAttribute]
@@ -142,7 +102,7 @@ namespace Test
 
 			var source3 = File.ReadAllText("Files/TestFile.txt");
 
-			return TestHelper.Verify(source2);
+			return TestHelper.Verify(source);
 		}
 	}
 }

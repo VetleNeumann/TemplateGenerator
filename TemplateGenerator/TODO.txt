@@ -1,9 +1,12 @@
 --- MAIN FEATURES ---
-* Ability to create components
+* Ability to create components - Done
+* Ability to delete components
 
 --- IMPROVMENTS ---
 * Ecs will scale with component creation
 * Optional fixed size container for optimal perf?
+* Remove Ref struct generation, make main component ref
+* System update order will depend on method order
 
 -- BUGS --
 * Fix bug where ecs not generating when builder returning to variable

@@ -9,10 +9,9 @@ namespace Project
 	{
 		public struct Vectorized
 		{
-			 public Vector256<int> x;
-			 public Vector256<int> y;
-			
-			 public FixedArray2<Vector512<FixedArray4<int>>> z;
+			public Vector256<int> x;
+			public Vector256<int> y;
+			public FixedArray2<Vector512<FixedArray4<int>>> z;
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]

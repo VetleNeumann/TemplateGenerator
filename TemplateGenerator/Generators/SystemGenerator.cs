@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Xml.Linq;
 
 namespace TemplateGenerator
 {
@@ -17,6 +19,7 @@ namespace TemplateGenerator
 			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));
 			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
 			model.Set("components".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetComponents(node)));
+			model.Set("methods".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMethods(node)));
 
 			return model;
 		}
@@ -43,13 +46,13 @@ namespace TemplateGenerator
 			return node.Identifier.ToString();
 		}
 
-		static Model<ReturnType>[] GetComponents(ClassDeclarationSyntax node)
+		static List<Model<ReturnType>> GetComponents(ClassDeclarationSyntax node)
 		{
 			var models = new List<Model<ReturnType>>();
 
 			foreach (var method in node.Members.Where(x => x is MethodDeclarationSyntax).Select(x => x as MethodDeclarationSyntax))
 			{
-				if (method.Identifier.Text != "Update")
+				if (method.Identifier.Text != "Update" && !method.Identifier.Text.StartsWith("Update"))
 					continue;
 
 				var model = new Model<ReturnType>();
@@ -59,7 +62,6 @@ namespace TemplateGenerator
 				{
 					var paramType = parameter.Type as QualifiedNameSyntax;
 					types.Add((paramType.Left as IdentifierNameSyntax).Identifier.Text);
-
 				}
 
 				model.Set("compName".AsSpan(), Parameter.Create(types.Distinct().First()));
@@ -70,7 +72,30 @@ namespace TemplateGenerator
 				break;
 			}
 
-			return models.ToArray();
+			return models;
+		}
+
+		static List<Model<ReturnType>> GetMethods(ClassDeclarationSyntax node)
+		{
+			var models = new List<Model<ReturnType>>();
+
+			foreach (var method in node.Members.Where(x => x is MethodDeclarationSyntax).Select(x => x as MethodDeclarationSyntax))
+			{
+				if (method.Identifier.Text != "Update" && !method.Identifier.Text.StartsWith("Update"))
+					continue;
+
+				var model = new Model<ReturnType>();
+
+				var paramType = method.ParameterList.Parameters[0].Type as QualifiedNameSyntax;
+				var name = paramType.Right as IdentifierNameSyntax;
+
+				model.Set("methodName".AsSpan(), Parameter.Create(method.Identifier.Text));
+				model.Set("methodType".AsSpan(), Parameter.Create(name.Identifier.Text == "Ref" ? "Single" : "Vector"));
+
+				models.Add(model);
+			}
+
+			return models;
 		}
 	}
 }

@@ -12,11 +12,10 @@ namespace $namespace
 			while (en.MoveNext())
 			{
 				var item = en.Current;
-				for (int i = 0; i < 8; i++) // TODO: Compute this value?
+				$methods|$methodType == "Single"|~>for (int i = 0; i < 8; i++) // TODO: Compute this value?
 				{
-					Update($components~>|$compName|.Ref.FromArray(ref item.item1Single, i)<~~>, <~);
-				}
-				Update(ref item.item1Vec);
+					$methodName($components~>|$compName|.Ref.FromArray(ref item.item1Single, i)<~~>, <~);
+				}<~|$methodType == "Vector"|~>$methodName(ref item.item1Vec);<~~>\n				<~\n
 			}
 		}
 	}
