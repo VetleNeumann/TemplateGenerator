@@ -3,24 +3,24 @@ using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
 
-namespace Project
+namespace Project.Primitives
 {
-	public partial class PositionSystem : ISystem<Position, Position.Vectorized, Position.Array>
+	public partial class PositionSystem
 	{
-		public void Update<T1Arch>(ref ComponentEnumerableNew<Position, Position.Vectorized, Position.Array>.Enumerator<T1Arch> en)
-			where T1Arch : unmanaged, IArchType<T1Arch, Position, Position.Vectorized, Position.Array>
+		public void Update<T1Arch>(ref ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<T1Arch> en)
+			where T1Arch : unmanaged, IArchType<T1Arch, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>
 		{
 			while (en.MoveNext())
 			{
 				var item = en.Current;
 				for (int i = 0; i < 8; i++) // TODO: Compute this value?
 				{
-					Update(Position.Ref.FromArray(ref item.item1Single, i));
+					Update(Project.Primitives.Position.Ref.FromArray(ref item.item1Single, i));
 				}
 				Update(ref item.item1Vec);
 				for (int i = 0; i < 8; i++) // TODO: Compute this value?
 				{
-					UpdateAfter(Position.Ref.FromArray(ref item.item1Single, i));
+					UpdateAfter(Project.Primitives.Position.Ref.FromArray(ref item.item1Single, i));
 				}
 			}
 		}

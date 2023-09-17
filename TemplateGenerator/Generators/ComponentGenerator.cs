@@ -15,7 +15,7 @@ namespace TemplateGenerator
 
 		public string Template => "Component.tcs";
 
-		public bool Filter(GeneratorSyntaxContext context, StructDeclarationSyntax node)
+		public bool Filter(StructDeclarationSyntax node)
 		{
 			foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
 			{
@@ -35,7 +35,7 @@ namespace TemplateGenerator
 		public Model<ReturnType> CreateModel(Compilation compilation, StructDeclarationSyntax node)
 		{
 			var model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), new Parameter<string>(TemplateGeneratorHelpers.GetNamespace(node)));
+			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
 			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
 			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMembers(node)));
 

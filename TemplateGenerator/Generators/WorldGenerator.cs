@@ -30,14 +30,14 @@ namespace TemplateGenerator
 			var archTypeComponents = GetArchTypeComponents(archTypeStep);
 
 			var model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), Parameter.Create(TemplateGeneratorHelpers.GetNamespace(node)));
-			model.Set("ecsName".AsSpan(), new Parameter<string>("Ecs"));
+			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
+			model.Set("ecsName".AsSpan(), new Parameter<string>(EcsGenerator.GetEcsName(node)));
 			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetWorlds(compilation, worldStep, systems, archTypeComponents)));
 
 			return model;
 		}
 
-		public bool Filter(GeneratorSyntaxContext context, IdentifierNameSyntax node)
+		public bool Filter(IdentifierNameSyntax node)
 		{
 			return node.Identifier.Text == "EcsBuilder";
 		}
@@ -67,6 +67,9 @@ namespace TemplateGenerator
 					continue;
 
 				if (genericName.Identifier.Text != "World")
+					continue;
+
+				if (invocation.ArgumentList.Arguments.Count == 0)
 					continue;
 
 				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
@@ -109,7 +112,7 @@ namespace TemplateGenerator
 			return archTypes;
 		}
 
-		static Model<ReturnType>[] GetSystems(Compilation compilation, List<string> worldArchTypes, List<string> systems, Dictionary<string, List<string>> archTypeComponents)
+		static List<Model<ReturnType>> GetSystems(Compilation compilation, List<string> worldArchTypes, List<string> systems, Dictionary<string, List<string>> archTypeComponents)
 		{
 			var models = new List<Model<ReturnType>>();
 
@@ -119,7 +122,7 @@ namespace TemplateGenerator
 			{
 				var systemComps = GetSystemComponents(compilation, system);
 
-				if (!systemComps.All(worldComponents.Contains))
+				if (!systemComps.Select(x => x.Split('.').Last()).All(worldComponents.Contains))
 					continue;
 
 				var model = new Model<ReturnType>();
@@ -129,16 +132,18 @@ namespace TemplateGenerator
 				models.Add(model);
 			}
 
-			return models.ToArray();
+			return models;
 		}
 
 		static List<Model<ReturnType>> GetComptaibleContainers(List<string> systemComps, List<string> worldArchTypes, Dictionary<string, List<string>> archTypeComponents)
 		{
 			List<Model<ReturnType>> models = new();
 
+			var systemCompsWithoutNamespace = systemComps.Select(x => x.Split('.').Last());
+
 			foreach (var archType in worldArchTypes)
 			{
-				if (!systemComps.All(archTypeComponents[archType].Contains))
+				if (!systemCompsWithoutNamespace.All(archTypeComponents[archType].Contains))
 					continue;
 
 				var compModels = systemComps.ToParameter().ToModel("compName").ToList();
@@ -156,7 +161,7 @@ namespace TemplateGenerator
 		static List<string> GetSystemComponents(Compilation compilation, string name)
 		{
 			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
-			var systemNode = FindNode<ClassDeclarationSyntax>(nodes, x => x.Identifier.Text == name);
+			var systemNode = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == name);
 
 			List<string> names = new List<string>();
 			foreach (var method in systemNode.Members.Where(x => x is MethodDeclarationSyntax).Select(x => x as MethodDeclarationSyntax))
@@ -167,8 +172,12 @@ namespace TemplateGenerator
 				foreach (var parameter in method.ParameterList.Parameters)
 				{
 					var paramType = parameter.Type as QualifiedNameSyntax;
+					string compName = (paramType.Left as IdentifierNameSyntax).Identifier.Text;
 
-					names.Add((paramType.Left as IdentifierNameSyntax).Identifier.Text);
+					var compNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == compName);
+
+					names.Add($"{compNode.GetNamespace()}.{compName}");
+					//names.Add(compName);
 				}
 
 				// TODO: Only do first method for now
@@ -176,11 +185,6 @@ namespace TemplateGenerator
 			}
 
 			return names;
-		}
-
-		static T FindNode<T>(IEnumerable<SyntaxNode> nodes, Func<T, bool> predicate) where T : SyntaxNode
-		{
-			return nodes.Where(x => x is T).Cast<T>().Single(predicate);
 		}
 
 		static List<string> GetSystemNames(MemberAccessExpressionSyntax step)

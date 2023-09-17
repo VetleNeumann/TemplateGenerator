@@ -24,14 +24,14 @@ namespace TemplateGenerator
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 
 			var model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), Parameter.Create(TemplateGeneratorHelpers.GetNamespace(node)));
-			model.Set("ecsName".AsSpan(), new Parameter<string>("Ecs"));
-			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetArchTypes(archTypeStep)));
+			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
+			model.Set("ecsName".AsSpan(), new Parameter<string>(EcsGenerator.GetEcsName(node)));
+			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetArchTypes(compilation, archTypeStep)));
 
 			return model;
 		}
 
-		public bool Filter(GeneratorSyntaxContext context, IdentifierNameSyntax node)
+		public bool Filter(IdentifierNameSyntax node)
 		{
 			return node.Identifier.Text == "EcsBuilder";
 		}
@@ -41,7 +41,7 @@ namespace TemplateGenerator
 			return $"{EcsGenerator.GetEcsName(node)}_ArchType";
 		}
 
-		static List<Model<ReturnType>> GetArchTypes(MemberAccessExpressionSyntax step)
+		static List<Model<ReturnType>> GetArchTypes(Compilation compilation, MemberAccessExpressionSyntax step)
 		{
 			var models = new List<Model<ReturnType>>();
 
@@ -68,7 +68,7 @@ namespace TemplateGenerator
 
 				var model = new Model<ReturnType>();
 				model.Set("archTypeName".AsSpan(), Parameter.Create(nameToken));
-				model.Set("components".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetComponents(genericName)));
+				model.Set("components".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetComponents(compilation, genericName)));
 
 				models.Add(model);
 
@@ -78,14 +78,17 @@ namespace TemplateGenerator
 			return models;
 		}
 
-		static Model<ReturnType>[] GetComponents(GenericNameSyntax name)
+		static Model<ReturnType>[] GetComponents(Compilation compilation, GenericNameSyntax name)
 		{
+			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 			var models = new List<Model<ReturnType>>();
 
 			foreach (IdentifierNameSyntax comp in name.TypeArgumentList.Arguments)
 			{
+				var compNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == comp.Identifier.Text);
+
 				var model = new Model<ReturnType>();
-				model.Set("compName".AsSpan(), Parameter.Create(comp.Identifier.Text));
+				model.Set("compName".AsSpan(), Parameter.Create($"{compNode.GetNamespace()}.{comp.Identifier.Text}"));
 				model.Set("varName".AsSpan(), Parameter.Create(comp.Identifier.Text));
 
 				models.Add(model);

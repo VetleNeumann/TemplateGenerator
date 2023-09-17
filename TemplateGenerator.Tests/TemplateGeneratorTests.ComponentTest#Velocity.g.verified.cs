@@ -3,7 +3,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
 
-namespace Project
+namespace Project.Primitives
 {
 	public partial struct Velocity : IComponent<Velocity, Velocity.Vectorized, Velocity.Array>
 	{

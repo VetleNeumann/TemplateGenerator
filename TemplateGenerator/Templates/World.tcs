@@ -16,7 +16,7 @@ namespace $namespace
 			}
 
 			$archTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public ArchRef<$archTypeName> Create(in |$archTypeName|.Ref data)
+			public ArchRef<$archTypeName> Create(in |$archTypeName| data)
 			{
 				return container|$archTypeName|.Create(data);
 			}

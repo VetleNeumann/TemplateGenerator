@@ -1,8 +1,28 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 
 namespace TemplateGenerator.Tests
 {
+	public class AdditionalTemplate : AdditionalText
+	{
+		public override string Path => name;
+
+		string name;
+		string content;
+
+        public AdditionalTemplate(string name, string content)
+        {
+			this.name = name.EndsWith(".tcs") ? name : $"{name}.tcs";
+			this.content = content;
+        }
+
+        public override SourceText? GetText(CancellationToken cancellationToken = default)
+		{
+			return SourceText.From(content, System.Text.Encoding.UTF8);
+		}
+	}
+
 	public static class TestHelper
 	{
 		public static Task Verify(string source)
@@ -24,7 +44,7 @@ namespace TemplateGenerator.Tests
 		public Task ComponentTest()
 		{
 			string source = @"
-using namespace Project;
+using namespace Project.Primitives;
 
 [ComponentAttribute]
 public partial struct Position
@@ -94,11 +114,13 @@ namespace Test
 			{
 				x.World<Ecs.Wall, Ecs.Tile>(""Main"");
 				x.World<Ecs.Wall>(""World2"");
+				x.World<Ecs.Wall>();
 			})
 			.Build<Ecs>();
 	}
 }
 ";
+
 
 			var source3 = File.ReadAllText("Files/TestFile.txt");
 

@@ -7,41 +7,41 @@ namespace Test
 {
 	public partial class Ecs
 	{
-		public struct Wall : IArchType<Wall, Position, Position.Vectorized, Position.Array>, IArchType<Wall, Velocity, Velocity.Vectorized, Velocity.Array>
+		public struct Wall : IArchType<Wall, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>, IArchType<Wall, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>
 		{
-			public Position.Vectorized Position;
-			public Velocity.Vectorized Velocity;
+			public Project.Primitives.Position.Vectorized Position;
+			public Project.Primitives.Velocity.Vectorized Velocity;
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Position.Array IArchType<Wall, Position, Position.Vectorized, Position.Array>.GetSingle(ref Wall arch)
+			static ref Project.Primitives.Position.Array IArchType<Wall, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetSingle(ref Wall arch)
 			{
-				return ref Unsafe.As<Position.Vectorized, Position.Array>(ref arch.Position);
+				return ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref arch.Position);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Position.Vectorized IArchType<Wall, Position, Position.Vectorized, Position.Array>.GetVec(ref Wall arch)
+			static ref Project.Primitives.Position.Vectorized IArchType<Wall, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetVec(ref Wall arch)
 			{
 				return ref arch.Position;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Velocity.Array IArchType<Wall, Velocity, Velocity.Vectorized, Velocity.Array>.GetSingle(ref Wall arch)
+			static ref Project.Primitives.Velocity.Array IArchType<Wall, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.GetSingle(ref Wall arch)
 			{
-				return ref Unsafe.As<Velocity.Vectorized, Velocity.Array>(ref arch.Velocity);
+				return ref Unsafe.As<Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>(ref arch.Velocity);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Velocity.Vectorized IArchType<Wall, Velocity, Velocity.Vectorized, Velocity.Array>.GetVec(ref Wall arch)
+			static ref Project.Primitives.Velocity.Vectorized IArchType<Wall, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.GetVec(ref Wall arch)
 			{
 				return ref arch.Velocity;
 			}
 
 			public ref struct Ref
 			{
-				public Position.Ref Position;
-				public Velocity.Ref Velocity;
+				public Project.Primitives.Position.Ref Position;
+				public Project.Primitives.Velocity.Ref Velocity;
 
-				public Ref(Position.Ref Position, Velocity.Ref Velocity)
+				public Ref(Project.Primitives.Position.Ref Position, Project.Primitives.Velocity.Ref Velocity)
 				{
 					this.Position = Position;
 					this.Velocity = Velocity;
@@ -51,34 +51,34 @@ namespace Test
 				public static Ref FromArchType(ref Wall archType, int idx)
 				{
 					return new Ref(
-						Test.Position.Ref.FromArray(ref Unsafe.As<Position.Vectorized, Position.Array>(ref archType.Position), idx), 
-						Test.Velocity.Ref.FromArray(ref Unsafe.As<Velocity.Vectorized, Velocity.Array>(ref archType.Velocity), idx)
+						Project.Primitives.Position.Ref.FromArray(ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref archType.Position), idx), 
+						Project.Primitives.Velocity.Ref.FromArray(ref Unsafe.As<Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>(ref archType.Velocity), idx)
 					);
 				}
 			}
 		}
 
-		public struct Tile : IArchType<Tile, Position, Position.Vectorized, Position.Array>
+		public struct Tile : IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>
 		{
-			public Position.Vectorized Position;
+			public Project.Primitives.Position.Vectorized Position;
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Position.Array IArchType<Tile, Position, Position.Vectorized, Position.Array>.GetSingle(ref Tile arch)
+			static ref Project.Primitives.Position.Array IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetSingle(ref Tile arch)
 			{
-				return ref Unsafe.As<Position.Vectorized, Position.Array>(ref arch.Position);
+				return ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref arch.Position);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Position.Vectorized IArchType<Tile, Position, Position.Vectorized, Position.Array>.GetVec(ref Tile arch)
+			static ref Project.Primitives.Position.Vectorized IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetVec(ref Tile arch)
 			{
 				return ref arch.Position;
 			}
 
 			public ref struct Ref
 			{
-				public Position.Ref Position;
+				public Project.Primitives.Position.Ref Position;
 
-				public Ref(Position.Ref Position)
+				public Ref(Project.Primitives.Position.Ref Position)
 				{
 					this.Position = Position;
 				}
@@ -87,7 +87,7 @@ namespace Test
 				public static Ref FromArchType(ref Tile archType, int idx)
 				{
 					return new Ref(
-						Test.Position.Ref.FromArray(ref Unsafe.As<Position.Vectorized, Position.Array>(ref archType.Position), idx)
+						Project.Primitives.Position.Ref.FromArray(ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref archType.Position), idx)
 					);
 				}
 			}

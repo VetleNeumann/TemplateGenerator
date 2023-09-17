@@ -1,15 +1,19 @@
 ﻿using LightLexer;
 using LightParser;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -26,16 +30,17 @@ namespace TemplateGenerator
 			{ EngineState.Variable,   new VariableState() },
 		};
 
-		public static void RegisterTemplateGenerator<TNode>(IncrementalGeneratorInitializationContext generatorContext, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
+		public static void RegisterTemplateGenerator<TNode>(IncrementalGeneratorInitializationContext context, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
 		{
-			var nodes = generatorContext.SyntaxProvider
+			var generatorNodes = context.SyntaxProvider
 				.CreateSyntaxProvider(
-					(x, _) => x is TNode t,
-					(x, _) => generator.Filter(x, (TNode)x.Node) ? (TNode)x.Node : null
-				).Where(x => x is not null);
+					(x, _) => x is TNode t && generator.Filter(t),
+					(x, _) => x.Node as TNode
+				).Where(x => x is not null)
+				.Collect();
 
-			var combinaton = generatorContext.CompilationProvider.Combine(nodes.Collect());
-			generatorContext.RegisterSourceOutput(combinaton, (spc, source) => ExecuteGenerator(source.Left, source.Right, spc, generator));
+			var combinaton = context.CompilationProvider.Combine(generatorNodes);
+			context.RegisterSourceOutput(combinaton, (spc, source) => ExecuteGenerator(source.Left, source.Right, spc, generator));
 		}
 
 		public static void ExecuteGenerator<TNode>(Compilation compilation, ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
@@ -94,8 +99,30 @@ namespace TemplateGenerator
 
 			return sb.ToString();
 		}
+	}
 
-		public static string GetNamespace(SyntaxNode syntax)
+	[Generator]
+	public class TemplateGenerator : IIncrementalGenerator
+	{
+		public void Initialize(IncrementalGeneratorInitializationContext context)
+		{
+			var ecsGenerator = new EcsGenerator();
+			var compGenerator = new ComponentGenerator();
+			var archTypeGenerator = new ArchTypeGenerator();
+			var systemGenerator = new SystemGenerator();
+			var worldGenerator = new WorldGenerator();
+
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, worldGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator);
+		}
+	}
+
+	public static class GeneratorExtensions
+	{
+		public static string GetNamespace(this SyntaxNode syntax)
 		{
 			// If we don't have a namespace at all we'll return an empty string
 			// This accounts for the "default namespace" case
@@ -138,24 +165,10 @@ namespace TemplateGenerator
 			// return the final namespace
 			return nameSpace;
 		}
-	}
 
-	[Generator]
-	public class TemplateGenerator : IIncrementalGenerator
-	{
-		public void Initialize(IncrementalGeneratorInitializationContext context)
+		public static T FindNode<T>(this IEnumerable<SyntaxNode> nodes, Func<T, bool> predicate) where T : SyntaxNode
 		{
-			var ecsGenerator = new EcsGenerator();
-			var compGenerator = new ComponentGenerator();
-			var archTypeGenerator = new ArchTypeGenerator();
-			var systemGenerator = new SystemGenerator();
-			var worldGenerator = new WorldGenerator();
-
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, worldGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator);
+			return nodes.Where(x => x is T).Cast<T>().Single(predicate);
 		}
 	}
 }

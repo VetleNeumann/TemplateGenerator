@@ -10,7 +10,7 @@ namespace TemplateGenerator
 	{
 		string Template { get; }
 
-		bool Filter(GeneratorSyntaxContext context, TNode node);
+		bool Filter(TNode node);
 
 		Model<ReturnType> CreateModel(Compilation compilation, TNode node);
 

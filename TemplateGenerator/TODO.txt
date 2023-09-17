@@ -1,12 +1,27 @@
 --- MAIN FEATURES ---
-* Ability to create components - Done
 * Ability to delete components
+* Resource system
+* Move Ecs templates to the ecs project
+* Allow for targeting of types in refernced projects
+--- DONE ---
+* Ability to create components
 
 --- IMPROVMENTS ---
 * Ecs will scale with component creation
 * Optional fixed size container for optimal perf?
 * Remove Ref struct generation, make main component ref
+* Make worlds ref struct
+* Way to statically build ecs
+--- DONE ---
 * System update order will depend on method order
 
 -- BUGS --
 * Fix bug where ecs not generating when builder returning to variable
+--- DONE ---
+
+-- ANALYZERS --
+* Warning when component is not ref
+* Warning when using managed type in component
+* Force system methods to be static?
+* Ensure ecs component is valid component
+--- DONE ---

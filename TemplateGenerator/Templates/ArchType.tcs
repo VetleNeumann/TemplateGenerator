@@ -35,7 +35,7 @@ namespace $namespace
 				public static Ref FromArchType(ref $archTypeName archType, int idx)
 				{
 					return new Ref($components~>
-						|$namespace|.|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$varName), idx)<~~>, <~
+						|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$varName), idx)<~~>, <~
 					);
 				}
 			}

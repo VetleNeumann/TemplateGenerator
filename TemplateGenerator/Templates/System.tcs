@@ -4,18 +4,18 @@ using EnCS;
 
 namespace $namespace
 {
-	public partial class $name : ISystem<$components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>
+	public partial class $name
 	{
 		public void Update<T1Arch>(ref ComponentEnumerableNew<$components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<T1Arch> en)
-			where T1Arch : unmanaged, IArchType<T1Arch, $components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>
+			where T1Arch : unmanaged, $components~>IArchType<T1Arch, |$compName|, |$compName|.Vectorized, |$compName|.Array><~~>, <~
 		{
 			while (en.MoveNext())
 			{
 				var item = en.Current;
 				$methods|$methodType == "Single"|~>for (int i = 0; i < 8; i++) // TODO: Compute this value?
 				{
-					$methodName($components~>|$compName|.Ref.FromArray(ref item.item1Single, i)<~~>, <~);
-				}<~|$methodType == "Vector"|~>$methodName(ref item.item1Vec);<~~>\n				<~\n
+					$methodName($components~>|$compName|.Ref.FromArray(ref item.item|$compIdx|Single, i)<~~>, <~);
+				}<~|$methodType == "Vector"|~>$methodName($components~>ref item.item|$compIdx|Vec<~~>, <~);<~~>\n				<~\n
 			}
 		}
 	}

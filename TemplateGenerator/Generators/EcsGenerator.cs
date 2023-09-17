@@ -11,8 +11,6 @@ namespace TemplateGenerator
 {
 	class EcsGenerator : ITemplateSourceGenerator<IdentifierNameSyntax>
 	{
-		public Guid Id { get; } = Guid.NewGuid();
-
 		public string Template => "Ecs.tcs";
 
 		public Model<ReturnType> CreateModel(Compilation compilation, IdentifierNameSyntax node)
@@ -31,7 +29,7 @@ namespace TemplateGenerator
 
 			var model = new Model<ReturnType>();
 			// Ecs Info
-			model.Set("namespace".AsSpan(), Parameter.Create(TemplateGeneratorHelpers.GetNamespace(node)));
+			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
 			model.Set("name".AsSpan(), Parameter.Create(GetEcsName(node)));
 			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetWorlds(worldStep)));
 
@@ -43,7 +41,7 @@ namespace TemplateGenerator
 			return model;
 		}
 
-		public bool Filter(GeneratorSyntaxContext context, IdentifierNameSyntax node)
+		public bool Filter(IdentifierNameSyntax node)
 		{
 			return node.Identifier.Text == "EcsBuilder";
 		}
@@ -94,6 +92,9 @@ namespace TemplateGenerator
 					continue;
 
 				if (genericName.Identifier.Text != "World")
+					continue;
+
+				if (invocation.ArgumentList.Arguments.Count == 0)
 					continue;
 
 				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
