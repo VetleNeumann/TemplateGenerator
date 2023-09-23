@@ -13,7 +13,8 @@ namespace Project.Primitives
 			while (en.MoveNext())
 			{
 				var item = en.Current;
-				for (int i = 0; i < 8; i++) // TODO: Compute this value?
+				var remaining = en.Remaining;
+				for (int i = 0; i < remaining; i++)
 				{
 					Update(Project.Primitives.Position.Ref.FromArray(ref item.item1Single, i), Project.Primitives.Velocity.Ref.FromArray(ref item.item2Single, i));
 				}

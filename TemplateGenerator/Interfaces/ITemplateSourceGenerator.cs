@@ -6,7 +6,7 @@ using System;
 
 namespace TemplateGenerator
 {
-	interface ITemplateSourceGenerator<TNode> where TNode : SyntaxNode
+	public interface ITemplateSourceGenerator<TNode> where TNode : SyntaxNode
 	{
 		string Template { get; }
 

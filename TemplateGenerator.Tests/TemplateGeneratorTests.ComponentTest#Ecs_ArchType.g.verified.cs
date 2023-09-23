@@ -96,16 +96,18 @@ namespace Test
 
 	public static class Ecs_ContainerExtensions
 	{
+		// TODO: Generate create method
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Ecs.Wall.Ref Get(this ref ArchTypeContainer<Ecs.Wall> container, ArchRef<Ecs.Wall> ptr)
 		{
-			return Ecs.Wall.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7); // TODO: Fix anding
+			return Ecs.Wall.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Ecs.Tile.Ref Get(this ref ArchTypeContainer<Ecs.Tile> container, ArchRef<Ecs.Tile> ptr)
 		{
-			return Ecs.Tile.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7); // TODO: Fix anding
+			return Ecs.Tile.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7);
 		}
 	}
 }

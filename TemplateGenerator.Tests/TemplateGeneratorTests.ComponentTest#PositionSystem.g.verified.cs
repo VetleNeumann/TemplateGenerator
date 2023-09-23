@@ -13,12 +13,13 @@ namespace Project.Primitives
 			while (en.MoveNext())
 			{
 				var item = en.Current;
-				for (int i = 0; i < 8; i++) // TODO: Compute this value?
+				var remaining = en.Remaining;
+				for (int i = 0; i < remaining; i++)
 				{
 					Update(Project.Primitives.Position.Ref.FromArray(ref item.item1Single, i));
 				}
 				Update(ref item.item1Vec);
-				for (int i = 0; i < 8; i++) // TODO: Compute this value?
+				for (int i = 0; i < remaining; i++)
 				{
 					UpdateAfter(Project.Primitives.Position.Ref.FromArray(ref item.item1Single, i));
 				}

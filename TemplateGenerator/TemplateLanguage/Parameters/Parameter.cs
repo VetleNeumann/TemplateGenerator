@@ -82,7 +82,7 @@ namespace TemplateGenerator
 		}
 	}
 
-	static class ModelLinqExtesions
+	public static class ModelLinqExtesions
 	{
 		public static IEnumerable<IParameter<ReturnType>> ToParameter<T>(this IEnumerable<T> e)
 		{

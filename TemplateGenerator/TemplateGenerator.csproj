@@ -5,44 +5,14 @@
 		<LangVersion>Latest</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
+		<!-- Nuget -->
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-
-		<!-- We don't want to reference the source generator dll directly in consuming projects -->
-		<IncludeBuildOutput>false</IncludeBuildOutput>
-
-		<!-- Ensure we don't use any API that might be problematic -->
-		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
 		<PackageId>TemplateGen</PackageId>
-		<Version>1.0.35</Version>
+		<Version>1.0.46</Version>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <None Remove="Templates\Ecs.tcs" />
-	  <None Remove="Templates\World.tcs" />
-	</ItemGroup>
-
-	<!-- The following libraries include the source generator interfaces and types we need -->
+	
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" PrivateAssets="all" />
 	</ItemGroup>
-	
-	<ItemGroup>
-	  <EmbeddedResource Include="Templates\World.tcs" />
-	  <EmbeddedResource Include="Templates\ArchType.tcs" />
-	  <EmbeddedResource Include="Templates\Component.tcs" />
-	  <EmbeddedResource Include="Templates\Ecs.tcs" />
-	  <EmbeddedResource Include="Templates\System.tcs" />
-	</ItemGroup>
-
-	<Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
-		<ItemGroup>
-			<!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
-			<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-		</ItemGroup>
-	</Target>
 </Project>

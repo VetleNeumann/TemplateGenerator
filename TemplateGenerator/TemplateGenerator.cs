@@ -20,7 +20,7 @@ using static System.Net.Mime.MediaTypeNames;
 namespace TemplateGenerator
 {
 
-	static class TemplateGeneratorHelpers
+	public static class TemplateGeneratorHelpers
 	{
 		static Dictionary<EngineState, IState<NodeType, EngineState>> stateDict = new()
 		{
@@ -48,7 +48,7 @@ namespace TemplateGenerator
 			if (nodeArray.IsDefaultOrEmpty)
 				return;
 
-			var template = ResourceReader.GetResource(generator.Template).AsSpan();
+			var template = generator.Template.AsSpan();
 
 			foreach (TNode node in nodeArray.Distinct())
 			{
@@ -98,77 +98,6 @@ namespace TemplateGenerator
 			ArrayPool<ReturnType>.Shared.Return(typeArr);
 
 			return sb.ToString();
-		}
-	}
-
-	[Generator]
-	public class TemplateGenerator : IIncrementalGenerator
-	{
-		public void Initialize(IncrementalGeneratorInitializationContext context)
-		{
-			var ecsGenerator = new EcsGenerator();
-			var compGenerator = new ComponentGenerator();
-			var archTypeGenerator = new ArchTypeGenerator();
-			var systemGenerator = new SystemGenerator();
-			var worldGenerator = new WorldGenerator();
-
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, worldGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator);
-		}
-	}
-
-	public static class GeneratorExtensions
-	{
-		public static string GetNamespace(this SyntaxNode syntax)
-		{
-			// If we don't have a namespace at all we'll return an empty string
-			// This accounts for the "default namespace" case
-			string nameSpace = string.Empty;
-
-			// Get the containing syntax node for the type declaration
-			// (could be a nested type, for example)
-			SyntaxNode potentialNamespaceParent = syntax.Parent;
-
-			// Keep moving "out" of nested classes etc until we get to a namespace
-			// or until we run out of parents
-			while (potentialNamespaceParent != null &&
-					potentialNamespaceParent is not NamespaceDeclarationSyntax
-					&& potentialNamespaceParent is not FileScopedNamespaceDeclarationSyntax)
-			{
-				potentialNamespaceParent = potentialNamespaceParent.Parent;
-			}
-
-			// Build up the final namespace by looping until we no longer have a namespace declaration
-			if (potentialNamespaceParent is BaseNamespaceDeclarationSyntax namespaceParent)
-			{
-				// We have a namespace. Use that as the type
-				nameSpace = namespaceParent.Name.ToString();
-
-				// Keep moving "out" of the namespace declarations until we 
-				// run out of nested namespace declarations
-				while (true)
-				{
-					if (namespaceParent.Parent is not NamespaceDeclarationSyntax parent)
-					{
-						break;
-					}
-
-					// Add the outer namespace as a prefix to the final namespace
-					nameSpace = $"{namespaceParent.Name}.{nameSpace}";
-					namespaceParent = parent;
-				}
-			}
-
-			// return the final namespace
-			return nameSpace;
-		}
-
-		public static T FindNode<T>(this IEnumerable<SyntaxNode> nodes, Func<T, bool> predicate) where T : SyntaxNode
-		{
-			return nodes.Where(x => x is T).Cast<T>().Single(predicate);
 		}
 	}
 }
