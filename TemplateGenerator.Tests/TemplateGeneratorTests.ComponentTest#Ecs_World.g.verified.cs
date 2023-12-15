@@ -1,4 +1,4 @@
-﻿//HintName: Ecs_World.g.cs
+//HintName: Ecs_World.g.cs
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
@@ -45,8 +45,8 @@ namespace Test
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(PositionSystem system)
 			{
-				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<Wall>(containerWall.AsSpan());
-				var enumTile = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<Tile>(containerTile.AsSpan());
+				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<Wall>(containerWall.AsSpan(), containerWall.Entities);
+				var enumTile = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<Tile>(containerTile.AsSpan(), containerTile.Entities);
 				
 				system.Update(ref enumWall);
 				system.Update(ref enumTile);
@@ -55,7 +55,7 @@ namespace Test
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(VelocitySystem system)
 			{
-				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.Enumerator<Wall>(containerWall.AsSpan());
+				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.Enumerator<Wall>(containerWall.AsSpan(), containerWall.Entities);
 				
 				system.Update(ref enumWall);
 			}
@@ -85,7 +85,7 @@ namespace Test
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(PositionSystem system)
 			{
-				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<Wall>(containerWall.AsSpan());
+				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<Wall>(containerWall.AsSpan(), containerWall.Entities);
 				
 				system.Update(ref enumWall);
 			}
@@ -93,7 +93,7 @@ namespace Test
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(VelocitySystem system)
 			{
-				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.Enumerator<Wall>(containerWall.AsSpan());
+				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.Enumerator<Wall>(containerWall.AsSpan(), containerWall.Entities);
 				
 				system.Update(ref enumWall);
 			}

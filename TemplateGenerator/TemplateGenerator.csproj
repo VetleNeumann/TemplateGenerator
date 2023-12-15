@@ -8,7 +8,7 @@
 		<!-- Nuget -->
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageId>TemplateGen</PackageId>
-		<Version>1.0.46</Version>
+		<Version>1.0.52</Version>
 	</PropertyGroup>
 	
 	<ItemGroup>

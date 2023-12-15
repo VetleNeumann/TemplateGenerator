@@ -19,6 +19,11 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace TemplateGenerator
 {
+	static class DiagnosticDescriptors
+	{
+		public static readonly DiagnosticDescriptor TemplateFailed = new("TGEN001", "Template failed to render", "Template '{0}' failed with error: {1}", "Renderer", DiagnosticSeverity.Error, true);
+	}
+
 
 	public static class TemplateGeneratorHelpers
 	{
@@ -47,22 +52,38 @@ namespace TemplateGenerator
 		{
 			if (nodeArray.IsDefaultOrEmpty)
 				return;
-
+			
 			var template = generator.Template.AsSpan();
-
 			foreach (TNode node in nodeArray.Distinct())
 			{
 				ModelStack<ReturnType> stack = new ModelStack<ReturnType>();
 
-				Model<ReturnType> model = generator.CreateModel(compilation, node);
+				bool modelResult = generator.TryCreateModel(compilation, node, out Model<ReturnType> model, out List<Diagnostic> diagnostics);
+				foreach (var diagnostic in diagnostics.GroupBy(x => (x.Id, x.Location)).Select(x => x.First()))
+					generatorContext.ReportDiagnostic(diagnostic);
+
+				if (!modelResult)
+					continue;
+
 				stack.Push(model);
 
-				var result = RenderTemplate(template, stack);
+				var renderResult = TryRenderTemplate(template, stack, out string result);
+				if (!renderResult.Ok)
+				{
+					var errorSb = new StringBuilder("\n");
+					for (int i = 0; i < renderResult.Errors.Count; i++)
+					{
+						errorSb.Append($"\t{renderResult.Lines[i]}: {renderResult.Errors[i]}\n");
+					}
+
+					generatorContext.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.TemplateFailed, node.GetLocation(), $"{generator.GetName(node)}.g.cs", errorSb.ToString()));
+				}
+
 				generatorContext.AddSource($"{generator.GetName(node)}.g.cs", SourceText.From(result, Encoding.UTF8));
 			}
 		}
 
-		public static string RenderTemplate(ReadOnlySpan<char> template, ModelStack<ReturnType> stack)
+		public static ComputeResult TryRenderTemplate(ReadOnlySpan<char> template, ModelStack<ReturnType> stack, out string result)
 		{
 			StringBuilder sb = new StringBuilder();
 
@@ -89,15 +110,13 @@ namespace TemplateGenerator
 				returnTypes = types
 			};
 
-			var result = TemplateLanguageRules.Compute(ref context, 0, sb, stack);
-
-			if (!result.Ok)
-				throw new Exception("Template language was not ok!");
+			var computeResult = TemplateLanguageRules.Compute(ref context, 0, sb, stack);
+			result = sb.ToString();
 
 			ArrayPool<Node<NodeType>>.Shared.Return(nodeArr);
 			ArrayPool<ReturnType>.Shared.Return(typeArr);
 
-			return sb.ToString();
+			return computeResult;
 		}
 	}
 }

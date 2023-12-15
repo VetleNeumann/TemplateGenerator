@@ -35,7 +35,7 @@ namespace TemplateGenerator
 
 		private static IEnumerable<Assembly> GetAssemblies()
 		{
-			return AppDomain.CurrentDomain.GetAssemblies();
+			return AppDomain.CurrentDomain.GetAssemblies().Where(x => !x.IsDynamic); // Filter out dynamic assemblies as they dont support GetManifestResourceStream
 		}
 
 		private static string ReadEmbededResource(Assembly assembly, string name)

@@ -11,13 +11,14 @@
 * Optional fixed size container for optimal perf?
 * Remove Ref struct generation, make main component ref
 * Make worlds ref struct
-* Way to statically build ecs
+* Add builder generation framework
 --- DONE ---
+* Way to statically build ecs
 * System update order will depend on method order
 
 -- BUGS --
-* Fix bug where ecs not generating when builder returning to variable
 --- DONE ---
+* Fix bug where ecs not generating when builder returning to variable
 
 -- ANALYZERS --
 * Warning when component is not ref
