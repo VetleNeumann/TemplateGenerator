@@ -1,0 +1,39 @@
+using System.Runtime.Intrinsics;
+using System.Runtime.CompilerServices;
+using EnCS;
+
+namespace $namespace
+{
+	public partial class $ecsName
+	{
+		$worlds~>public ref struct $worldName
+		{
+			$worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n			<~
+
+			public $worldName($worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|<~~>, <~)
+			{
+				$worldArchTypes~>this.container|$archTypeName| = ref container|$archTypeName|;<~~>\n				<~
+			}
+
+			$worldArchTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public ArchRef<$archTypeName> Create(in |$archTypeName| data)
+			{
+				return container|$archTypeName|.Create(data);
+			}
+			
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public |$archTypeName|.Ref Get(in ArchRef<$archTypeName> ptr)
+			{
+				return container|$archTypeName|.Get(ptr);
+			}<~~>\n\n			<~
+
+			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void Loop($systemName system)
+			{
+				$systemContainers~>var enum|$containerName| = new ComponentEnumerableNew<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<$containerName>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
+				<~
+				$systemContainers~>system.Update(ref enum|$containerName|);<~~>\n				<~
+			}<~~>\n\n			<~
+		}<~~>\n\n		<~
+	}
+}

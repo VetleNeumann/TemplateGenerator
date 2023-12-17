@@ -2,6 +2,9 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+#if NETSTANDARD2_0
+using LightLexer.Helpers;
+#endif
 
 namespace LightLexer
 {
@@ -88,7 +91,7 @@ namespace LightLexer
 			if (span > text.Length || index == span)
 				return false;
 
-			token = new Token(index..span);
+			token = new Token(new Range(index, span));
 			token.Get<T1>(0) = item1;
 			Reset();
 			return true;
@@ -100,7 +103,7 @@ namespace LightLexer
 			if (index == span)
 				return false;
 
-			token = new Token(index..span);
+			token = new Token(new Range(index, span));
 			token.Get<T1>(0) = item1;
 			token.Get<T2>(1) = item2;
 			Reset();
@@ -179,7 +182,7 @@ namespace LightLexer
 
 		public ReadOnlySpan<char> GetSpan(in ReadOnlySpan<char> text)
 		{
-			return text[range];
+			return text.Slice(range.Start.Value, range.End.Value - range.Start.Value);
 		}
 	}
 
@@ -317,7 +320,7 @@ namespace LightLexer
 // https://github.com/dotnet/runtime/blob/419e949d258ecee4c40a460fb09c66d974229623/src/libraries/System.Private.CoreLib/src/System/Range.cs
 
 #if NETSTANDARD2_0
-namespace System
+namespace LightLexer.Helpers
 {
 	public static class SpanExtensions
 	{
@@ -563,7 +566,6 @@ namespace System
 
 namespace System.Runtime.CompilerServices
 {
-	/*
 	internal static class Unsafe
 	{
 		public static void SkipInit<T>(out T value) where T : struct
@@ -584,7 +586,6 @@ namespace System.Runtime.CompilerServices
 			return ref (&item)[0];
 		}
 	}
-	*/
 
 	internal static class RuntimeHelpers
 	{

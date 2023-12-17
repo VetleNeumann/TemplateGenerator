@@ -1,6 +1,7 @@
 ﻿using System;
 using LightLexer;
 using LightParser;
+using LightLexer.Helpers;
 
 namespace TemplateGenerator
 {

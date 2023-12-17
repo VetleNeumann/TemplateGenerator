@@ -1,0 +1,63 @@
+using System.Runtime.Intrinsics;
+using System.Runtime.CompilerServices;
+using EnCS;
+
+// TODO: Refactor when template import is supported in language
+namespace $namespace
+{
+	public partial class $name
+	{
+		$resourceManagers~>[Component]
+		public struct $resourceManagerType : IComponent<$resourceManagerType, |$resourceManagerType|.Vectorized, |$resourceManagerType|.Array>
+		{
+			public uint id;
+
+			public struct Vectorized
+			{
+				public Vector256<uint> id;
+			}
+
+			[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+			public struct Array
+			{
+				public const int Size = 8;
+
+				public FixedArray8<uint> x;
+			}
+
+			public ref struct Ref
+			{
+				public ref uint id;
+			
+				public Ref(ref float id)
+				{
+					this.id = ref id;
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public void Set(in |$resourceManagerType| data)
+				{
+					this.id = data.id;
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static Ref FromArray(ref Array array, int idx)
+				{
+					return new Ref(ref array.id[idx]);
+				}
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerType|, Vectorized, Array>
+			{
+				return ref TArch.GetVec(ref arch);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerType|, Vectorized, Array>
+			{
+				return ref TArch.GetSingle(ref arch);
+			}
+		}<~~>\n		<~
+	}
+}

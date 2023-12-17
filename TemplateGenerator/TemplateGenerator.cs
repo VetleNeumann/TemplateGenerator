@@ -1,4 +1,5 @@
 ﻿using LightLexer;
+using LightLexer.Helpers;
 using LightParser;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -43,7 +44,7 @@ namespace TemplateGenerator
 					(x, _) => x.Node as TNode
 				).Where(x => x is not null)
 				.Collect();
-
+			
 			var combinaton = context.CompilationProvider.Combine(generatorNodes);
 			context.RegisterSourceOutput(combinaton, (spc, source) => ExecuteGenerator(source.Left, source.Right, spc, generator));
 		}
@@ -92,14 +93,45 @@ namespace TemplateGenerator
 			Parser<NodeType, EngineState> parser = new(stateDict, tokens);
 			TypeResolver<NodeType, ReturnType> resolver = new(TypeResolver.ResolveType);
 
-			var nodeArr = ArrayPool<Node<NodeType>>.Shared.Rent(4096);
-			var typeArr = ArrayPool<ReturnType>.Shared.Rent(4096);
+			var nodeArr = ArrayPool<Node<NodeType>>.Shared.Rent(4096 * 2);
+			var typeArr = ArrayPool<ReturnType>.Shared.Rent(4096 * 2);
 
 			var ast = parser.GetAst(nodeArr.AsSpan());
 			int start = ast.InsertNode(NodeType.Start);
 			ast.SetRight(start);
 
 			parser.CalculateAst(ref ast, EngineState.TextState);
+
+			bool hasLoops = VeriyTree(ast.GetTree(), out int idx);
+
+			if (!hasLoops)
+			{
+				ref Node<NodeType> node = ref ast.GetTree()[idx];
+				var str = node.token.GetSpan(template).ToString();
+
+				var pointers = FindAllPointers(idx, ast.GetTree());
+
+				Console.WriteLine($"Idx: {node.token.range.Start}-{node.token.range.End}, '{str}'");
+                Console.WriteLine("Template:");
+				for (int i = 0; i < template.Length; i++)
+				{
+					if (IsWithin(node.token.range, i))
+					{
+						Console.BackgroundColor = ConsoleColor.Red;
+					}
+
+					for (int a = 0; a < pointers.Count; a++)
+					{
+						if (IsWithin(ast.GetTree()[pointers[a]].token.range, i))
+							Console.BackgroundColor = ConsoleColor.DarkCyan;
+					}
+
+					Console.Write(template[i]);
+					Console.BackgroundColor = ConsoleColor.Black;
+				}
+
+                throw new Exception("Abstract Syntax Tree contains loops");
+			}
 
 			var types = resolver.ResolveTypes(ast.GetRoot(), ast.GetTree(), typeArr);
 
@@ -117,6 +149,77 @@ namespace TemplateGenerator
 			ArrayPool<ReturnType>.Shared.Return(typeArr);
 
 			return computeResult;
+		}
+
+		static bool IsWithin(Range range, int idx)
+		{
+			return idx >= range.Start.Value && idx < range.End.Value;
+		}
+
+		static List<int> FindAllPointers(int idx, ReadOnlySpan<Node<NodeType>> nodes)
+		{
+			List<int> pointers = new List<int>();
+			for (int i = 0; i < nodes.Length; i++)
+			{
+				ref readonly Node<NodeType> curr = ref nodes[i];
+
+				if (curr.right == idx || curr.middle == idx || curr.left == idx)
+					pointers.Add(i);
+			}
+
+			return pointers;
+		}
+
+		static bool VeriyTree(ReadOnlySpan<Node<NodeType>> nodes, out int idx)
+		{
+			using RefStack<int> visited = new RefStack<int>(nodes.Length);
+			visited.Push(0);
+
+			for (int i = 0; i < nodes.Length; i++)
+			{
+				ref readonly Node<NodeType> curr = ref nodes[i];
+
+				if (curr.right != -1 && SpanContains(visited.AsSpan(), curr.right))
+				{
+					idx = curr.right;
+					return false;
+				}	
+
+				if (curr.middle != -1 && SpanContains(visited.AsSpan(), curr.middle))
+				{
+					idx = i;
+					return false;
+				}
+
+				if (curr.left != -1 && SpanContains(visited.AsSpan(), curr.left))
+				{
+					idx = i;
+					return false;
+				}
+
+				if (curr.right != -1)
+					visited.Push(curr.right);
+
+				if (curr.middle != -1)
+					visited.Push(curr.middle);
+
+				if (curr.left != -1)
+					visited.Push(curr.left);
+			}
+
+			idx = -1;
+			return true;
+		}
+
+		static bool SpanContains(ReadOnlySpan<int> span, int value)
+		{
+			for (int i = 0; i < span.Length; i++)
+			{
+				if (span[i] == value)
+					return true;
+			}
+
+			return false;
 		}
 	}
 }

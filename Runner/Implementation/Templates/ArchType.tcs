@@ -1,0 +1,72 @@
+using System.Runtime.Intrinsics;
+using System.Runtime.CompilerServices;
+using EnCS;
+
+namespace $namespace
+{
+	public partial class $ecsName
+	{
+		$archTypes~>public struct $archTypeName : $archTypeComponents~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
+		{
+			$archTypeComponents~>public |$compName|.Vectorized $compVarName;<~~>\n			<~
+
+			$archTypeResourceComponents~>public |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType| $compVarName;<~~>\n			<~
+
+			$archTypeComponents~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			static ref |$compName|.Array IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref $archTypeName arch)
+			{
+				return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.$compVarName);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			static ref |$compName|.Vectorized IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref $archTypeName arch)
+			{
+				return ref arch.$compVarName;
+			}<~~>\n\n			<~
+
+			$archTypeResourceComponents~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			static ref |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Array IArchType<$archTypeName, |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|, |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Vectorized, |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Array>.GetSingle(ref $archTypeName arch)
+			{
+				return ref Unsafe.As<|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Vectorized, |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Array>(ref arch.$compVarName);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			static ref |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Vectorized IArchType<$archTypeName, $compName, |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Vectorized, |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Array>.GetVec(ref $archTypeName arch)
+			{
+				return ref arch.$compVarName;
+			}<~~>\n\n			<~
+
+			public ref struct Ref
+			{
+				$archTypeComponents~>public |$compName|.Ref $compVarName;<~~>\n				<~
+
+				$archTypeResourceComponents~>public |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Ref $compVarName;<~~>\n			<~
+
+				public Ref($archTypeComponents~>|$compName|.Ref $compVarName<~~>, <~ $archTypeResourceComponents~>, |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Ref $compVarName<~)
+				{
+					$archTypeComponents~>this.$compVarName = $compVarName;<~~>\n					<~
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static Ref FromArchType(ref $archTypeName archType, int idx)
+				{
+					return new Ref($archTypeComponents~>
+						|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$compVarName), idx)<~~>, <~ $archTypeResourceComponents~>, 
+						|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Ref.FromArray(ref Unsafe.As<|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Vectorized, |$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerType|.Array>(ref archType.$compVarName), idx)<~
+					);
+				}
+			}
+		}<~~>\n\n		<~
+	}
+
+	public static class |$ecsName|_ContainerExtensions
+	{
+		// TODO: Generate create method
+
+		$archTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static |$ecsName|.|$archTypeName|.Ref Get(this ref ArchTypeContainer<|$ecsName|.$archTypeName> container, ArchRef<|$ecsName|.$archTypeName> ptr)
+		{
+			return |$ecsName|.|$archTypeName|.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7);
+		}<~~>\n\n		<~
+	}
+}

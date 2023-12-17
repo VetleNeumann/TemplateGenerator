@@ -1,0 +1,32 @@
+using System.Runtime.CompilerServices;
+using EnCS;
+
+namespace $namespace
+{
+	public partial class $name
+	{
+		$archTypes~>ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n		<~
+
+		public $name()
+		{
+			$archTypes~>container|$archTypeName| = new ArchTypeContainer<$archTypeName>();<~~>\n			<~
+		}
+
+		$worlds~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public $worldName Get|$worldName|()
+		{
+			return new |$worldName|($worldArchTypes~>ref container|$archTypeName|<~~>, <~);
+		}<~~>\n\n		<~
+	}
+
+	static class |$name|_Intercept
+	{
+		[InterceptsLocation(@"|$path|", $line, $character)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public static $name InterceptBuild(this EcsBuilder builder)
+		{
+			return new $name();
+		}
+	}
+}

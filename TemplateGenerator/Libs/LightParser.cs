@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -172,7 +173,35 @@ namespace LightParser
 
 		public Span<TReturnType> ResolveTypes(int root, ReadOnlySpan<Node<TNodeType>> nodes, Span<TReturnType> types)
 		{
-			ComputeType(root, nodes, types);
+			using RefStack<int> buff = new RefStack<int>(nodes.Length);
+			buff.Push(root);
+
+			for (int i = 0; i < buff.Count; i++)
+			{
+				var idx = buff.At(i);
+				ref readonly Node<TNodeType> curr = ref nodes[idx];
+
+				if (curr.right != -1)
+					buff.Push(curr.right);
+
+				if (curr.middle != -1)
+					buff.Push(curr.middle);
+
+				if (curr.left != -1)
+					buff.Push(curr.left);
+			}
+
+			for (int i = buff.Count - 1; i >= 0; i--)
+			{
+				ref readonly Node<TNodeType> node = ref nodes[buff.At(i)];
+
+				TReturnType right = node.right == -1 ? default : types[node.right];
+				TReturnType middle = node.middle == -1 ? default : types[node.middle];
+				TReturnType left = node.left == -1 ? default : types[node.left];
+
+				types[buff.At(i)] = typeResolver(node.nodeType, right, middle, left);
+			}
+
 			return types.Slice(0, nodes.Length);
 		}
 
@@ -280,19 +309,28 @@ namespace LightParser
 			this.currIdx = 0;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Push(in T item)
 		{
 			buff.Memory.Span[currIdx++] = item;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public T Pop()
 		{
 			return buff.Memory.Span[--currIdx];
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public ref T Peek(int offset = 0)
 		{
 			return ref buff.Memory.Span[currIdx + offset - 1];
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public ref T At(int idx)
+		{
+			return ref buff.Memory.Span[idx];
 		}
 
 		public bool TryPeek(int offset, out T val)
