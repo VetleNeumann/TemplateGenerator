@@ -81,7 +81,7 @@ namespace EnCS.Generator
 				var resourceManagerType = genericName.TypeArgumentList.Arguments[0] as IdentifierNameSyntax;
 				var resourceManager = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == resourceManagerType.Identifier.Text);
 
-				ResourceManagerGenerator.TryGetResourceManagers(resourceManager, out List<ResourceManager> localResourceManagers);
+				ResourceManagerGenerator.TryGetResourceManagers(compilation, resourceManager, out List<ResourceManager> localResourceManagers);
 				resourceManagers.AddRange(localResourceManagers);
 			}
 
@@ -118,11 +118,14 @@ namespace EnCS.Generator
 				if (!compSuccess && !resourceCompSuccess)
 					continue;
 
+				var uniqueResourcManagers = resourceComponents.Select(x => x.resourceManager).GroupBy(x => x.name).Select(x => x.First()).ToList();
+
 				models.Add(new ArchType()
 				{
 					name = nameToken,
 					components = components,
-					resourceComponents = resourceComponents
+					resourceComponents = resourceComponents,
+					resourceManagers = uniqueResourcManagers
 				});
 			}
 
@@ -172,7 +175,7 @@ namespace EnCS.Generator
 
 				models.Add(new ResourceComponent()
 				{
-					name = $"{compNode.GetNamespace()}.{comp.Identifier.Text}",
+					name = $"{resourceManager.ns}.{resourceManager.name}.{comp.Identifier.Text}",
 					varName = comp.Identifier.Text,
 					resourceManager = resourceManager
 				});
@@ -183,12 +186,12 @@ namespace EnCS.Generator
 
 		static bool IsResource(StructDeclarationSyntax comp, List<ResourceManager> resourceManagers)
 		{
-			return resourceManagers.Any(x => x.type == comp.Identifier.Text);
+			return resourceManagers.Any(x => x.inType == comp.Identifier.Text);
 		}
 
 		static bool TryGetResourceManager(StructDeclarationSyntax comp, List<ResourceManager> resourceManagers, out ResourceManager resourceManager)
 		{
-			resourceManager = resourceManagers.FirstOrDefault(x => x.type == comp.Identifier.Text);
+			resourceManager = resourceManagers.FirstOrDefault(x => x.inType == comp.Identifier.Text);
 			return IsResource(comp, resourceManagers);
 		}
 	}
@@ -198,14 +201,16 @@ namespace EnCS.Generator
 		public string name;
 		public List<Component> components;
 		public List<ResourceComponent> resourceComponents;
+		public List<ResourceManager> resourceManagers;
 
 		public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
 			model.Set("archTypeName".AsSpan(), Parameter.Create(name));
-			model.Set("archTypeComponents".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(components.Select(x => x.GetModel())));
+			model.Set("archTypeComponents".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(components.Select(x => x.GetModel()).Concat(resourceComponents.Select(x => x.GetModel()))));
 			model.Set("archTypeResourceComponents".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceComponents.Select(x => x.GetModel())));
+			model.Set("archTypeResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
 
 			return model;
 		}
@@ -222,6 +227,7 @@ namespace EnCS.Generator
 
 			model.Set("compName".AsSpan(), Parameter.Create(name));
 			model.Set("compVarName".AsSpan(), Parameter.Create(varName));
+			model.Set("compType".AsSpan(), Parameter.Create("Component"));
 				
 			return model;
 		}
@@ -240,6 +246,7 @@ namespace EnCS.Generator
 			model.Set("compName".AsSpan(), Parameter.Create(name));
 			model.Set("compVarName".AsSpan(), Parameter.Create(varName));
 			model.Set("compResourceManager".AsSpan(), Parameter.Create((IModel<ReturnType>)resourceManager.GetModel()));
+			model.Set("compType".AsSpan(), Parameter.Create("Resource"));
 
 			return model;
 		}

@@ -10,13 +10,39 @@ namespace Runner
 			string source = @"
 using namespace Project.Primitives;
 
+public struct TestContext
+{
+	public float data;
+}
+
 public struct Mesh
 {
 	public string name;
 }
 
+public struct MeshId
+{
+	public uint id;
+}
+
+public struct Kaki
+{
+	public string name;
+}
+
+public struct KakiId
+{
+	public uint id;
+}
+
 [ResourceManager]
-public partial class MeshResourceManager : IResourceManager<Mesh>
+public partial class TestResourceManager : IResourceManager<Kaki, KakiId>
+{
+
+}
+
+[ResourceManager]
+public partial class MeshResourceManager : IResourceManager<Mesh, MeshId>
 {
 
 }
@@ -54,17 +80,84 @@ public partial struct Scale
 	public static implicit operator Scale(Vector2 v) => new Scale(v.X, v.Y, 0);
 }
 
+[SystemAttribute<TestContext>]
+[UsingResource<MeshResourceManager>]
+[UsingResource<TestResourceManager>]
+public partial class ResourceSystem
+{
+	[SystemPreLoop, SystemLayer(0)]
+	public void PreLoop1()
+	{
+
+	}
+
+	[SystemUpdate, SystemLayer(1)]
+	public void Update(ref Scale.Vectorized scale)
+	{
+    }
+
+	[SystemUpdate, SystemLayer(1)]
+	public void Update(Scale.Ref scale)
+	{
+    }
+
+	[SystemPostLoop, SystemLayer(0)]
+	public void PostLoop1()
+	{
+
+	}
+
+	[SystemPreLoop, SystemLayer(1)]
+	public void PreLoop()
+	{
+
+	}
+
+	[SystemUpdate, SystemLayer(0, 16)]
+	public void Update(ref TestContext context, Position.Ref position, Velocity.Ref velocity, ref MeshId mesh, ref KakiId kaki)
+	{
+    }
+
+	[SystemUpdate, SystemLayer(0, 16)]
+	public void Update(ref TestContext context, ref Position.Vectorized position, ref Velocity.Vectorized velocity)
+	{
+	}
+
+	[SystemPostLoop, SystemLayer(1)]
+	public void PostLoop()
+	{
+
+	}
+}
+
+[SystemAttribute]
+public partial class TestSystem
+{
+	[SystemUpdate]
+	public void Update(Scale.Ref scale)
+	{
+	}
+
+	[SystemUpdate]
+	public void Update(Position.Ref position, Velocity.Ref velocity)
+	{
+	}
+}
+
 [SystemAttribute]
 public partial class PositionSystem
 {
+	[SystemUpdate]
 	public void Update(Position.Ref position)
 	{
     }
 
+	[SystemUpdate]
 	public void Update(ref Position.Vectorized position)
 	{
 	}
 
+	[SystemUpdate]
 	public void UpdateAfter(Position.Ref position)
 	{
     }
@@ -73,13 +166,22 @@ public partial class PositionSystem
 [SystemAttribute]
 public partial class VelocitySystem
 {
+	[SystemUpdate]
 	public void Update(Position.Ref position, Velocity.Ref velocity)
 	{
     }
 
+	[SystemUpdate]
 	public void Update(ref Position.Vectorized position,ref Velocity.Vectorized velocity)
 	{
 	}
+}
+
+[ComposedSystem<VelocitySystem>(layer = 0)]
+[ComposedSystem<ResourceSystem>(layer = 1, chunk = 8)]
+public partial class ComposedSystem
+{
+
 }
 
 public partial struct Ecs
@@ -95,13 +197,14 @@ namespace Test
 			.ArchType(x =>
 			{
 				x.ArchType<InvalidComp>(""IsWrong"");
-				x.ArchType<Position, Velocity, Mesh>(""Wall"");
-				x.ArchType<Position>(""Tile"");
+				x.ArchType<Position, Velocity, Mesh, Kaki>(""Wall"");
+				x.ArchType<Position, Scale>(""Tile"");
 			})
 			.System(x =>
 			{
 				x.System<PositionSystem>();
 				x.System<VelocitySystem>();
+				x.System<ResourceSystem>();
 			})
 			.World(x =>
 			{
@@ -112,6 +215,7 @@ namespace Test
 			.Resource(x =>
 			{
 				x.ResourceManager<MeshResourceManager>();
+				x.ResourceManager<TestResourceManager>();
 			})
 			.Build<Ecs>();
 
@@ -140,7 +244,12 @@ namespace Test
 			CSharpCompilation compilation = CSharpCompilation.Create("Tests", new[] { syntaxTree });
 
 			GeneratorDriver driver = CSharpGeneratorDriver.Create(new EnCS.Generator.TemplateGenerator());
-			driver = driver.RunGenerators(compilation);
-		}
+			for (int i = 0; i < 100; i++)
+			{
+                Console.WriteLine(i);
+                driver.RunGenerators(compilation);
+			}
+            Console.WriteLine("Done!");
+        }
 	}
 }

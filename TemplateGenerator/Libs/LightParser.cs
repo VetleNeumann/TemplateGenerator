@@ -22,9 +22,11 @@ namespace LightParser
 
 		void Set(ReadOnlySpan<char> name, IParameter<TReturnType> parameter);
 
+		void Add(IModel<TReturnType> model);
+
 		bool TryGet(ReadOnlySpan<char> name, out IParameter<TReturnType> parameter);
 
-		IEnumerable<IParameter<TReturnType>> GetEnumerable();
+		IEnumerable<KeyValuePair<int, IParameter<TReturnType>>> GetEnumerable();
 	}
 
 	public interface IParameter<TReturnType>
@@ -457,6 +459,14 @@ namespace LightParser
 		}
 #endif
 
+		public void Add(IModel<TReturnType> model)
+		{
+			foreach (var item in model.GetEnumerable())
+			{
+				data.Add(item.Key, item.Value);
+			}
+		}
+
 		public bool TryGet(ReadOnlySpan<char> name, out IParameter<TReturnType> parameter)
 		{
 #if NETSTANDARD2_0
@@ -466,9 +476,9 @@ namespace LightParser
 #endif
 		}
 
-		public IEnumerable<IParameter<TReturnType>> GetEnumerable()
+		public IEnumerable<KeyValuePair<int, IParameter<TReturnType>>> GetEnumerable()
 		{
-			return data.Select(x => x.Value);
+			return data;
 		}
 	}
 

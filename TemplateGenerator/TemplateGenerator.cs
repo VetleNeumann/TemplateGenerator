@@ -59,7 +59,18 @@ namespace TemplateGenerator
 			{
 				ModelStack<ReturnType> stack = new ModelStack<ReturnType>();
 
-				bool modelResult = generator.TryCreateModel(compilation, node, out Model<ReturnType> model, out List<Diagnostic> diagnostics);
+				bool modelResult;
+				List<Diagnostic> diagnostics;
+				Model<ReturnType> model;
+				try
+				{
+					modelResult = generator.TryCreateModel(compilation, node, out model, out diagnostics);
+				}
+				catch (Exception e)
+				{
+                    throw new Exception($"Generator '{generator.GetName(node)}' failed with:\n {e.ToString()}");
+				}
+				
 				foreach (var diagnostic in diagnostics.GroupBy(x => (x.Id, x.Location)).Select(x => x.First()))
 					generatorContext.ReportDiagnostic(diagnostic);
 

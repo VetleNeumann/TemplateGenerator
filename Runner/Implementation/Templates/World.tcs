@@ -10,9 +10,13 @@ namespace $namespace
 		{
 			$worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n			<~
 
-			public $worldName($worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|<~~>, <~)
+			$worldResourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName;<~~>\n			<~
+
+			public $worldName($worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|<~~>, <~$worldResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 			{
 				$worldArchTypes~>this.container|$archTypeName| = ref container|$archTypeName|;<~~>\n				<~
+
+				$worldResourceManagers~>this.|$resourceManagerName| = $resourceManagerName;<~~>\n				<~
 			}
 
 			$worldArchTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -24,7 +28,7 @@ namespace $namespace
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public |$archTypeName|.Ref Get(in ArchRef<$archTypeName> ptr)
 			{
-				return container|$archTypeName|.Get(ptr);
+				return container|$archTypeName|.Get(ptr$archTypeResourceManagers~>, $resourceManagerName<~);
 			}<~~>\n\n			<~
 
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,7 +36,7 @@ namespace $namespace
 			{
 				$systemContainers~>var enum|$containerName| = new ComponentEnumerableNew<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<$containerName>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
 				<~
-				$systemContainers~>system.Update(ref enum|$containerName|);<~~>\n				<~
+				$systemGroups~>system.Update($groupContainers~>ref enum|$containerName|<~~>, <~$groupResourceManagers~>, $resourceManagerName<~);<~~>\n				<~
 			}<~~>\n\n			<~
 		}<~~>\n\n		<~
 	}

@@ -1,6 +1,7 @@
 ﻿using LightParser;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace TemplateGenerator
@@ -18,7 +19,7 @@ namespace TemplateGenerator
 		{
 			if (typeof(T) == typeof(IParameter<ReturnType>) || typeof(IParameter<ReturnType>).IsAssignableFrom(typeof(T)))
 			{
-				var enumerable = this.value.GetEnumerable();
+				var enumerable = this.value.GetEnumerable().Select(x => x.Value);
 				value = Unsafe.As<IEnumerable<IParameter<ReturnType>>, IEnumerable<T>>(ref enumerable);
 				return true;
 			}

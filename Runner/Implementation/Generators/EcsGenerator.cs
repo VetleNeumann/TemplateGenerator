@@ -24,10 +24,9 @@ namespace EnCS.Generator
 
 			var buildStep = builderSteps.Single(x => x.Name.Identifier.Text == "Build");
 			var worldStep = builderSteps.First(x => x.Name.Identifier.Text == "World");
+			var systemStep = builderSteps.First(x => x.Name.Identifier.Text == "System");
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 			var resourceStep = builderSteps.First(x => x.Name.Identifier.Text == "Resource");
-
-			bool resourceManagerSuccess = ArchTypeGenerator.TryGetResourceManagers(compilation, resourceStep, diagnostics, out List<ResourceManager> resourceManagers);
 
 			model = new Model<ReturnType>();
 
@@ -35,12 +34,16 @@ namespace EnCS.Generator
 			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
 			model.Set("name".AsSpan(), Parameter.Create(GetEcsName(node)));
 
-			var worlds = GetWorlds(worldStep);
-			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
+			ArchTypeGenerator.TryGetResourceManagers(compilation, resourceStep, diagnostics, out List<ResourceManager> resourceManagers);
+			model.Set("resourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
 
 			var discradDiagnostics = new List<Diagnostic>();
 			var archTypeSuccess = ArchTypeGenerator.TryGetArchTypes(compilation, archTypeStep, resourceManagers, discradDiagnostics, out List<ArchType> archTypes);
 			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(archTypes.Select(x => x.GetModel())));
+
+			var systems = WorldGenerator.GetSystems(systemStep);
+			var worldSuccess = WorldGenerator.TryGetWorlds(compilation, worldStep, systems, archTypes, resourceManagers, diagnostics, out List<World> worlds);
+			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
 
 			// Intercept info
 			var builderLocation = buildStep.Name.GetLocation();
@@ -83,45 +86,6 @@ namespace EnCS.Generator
 			var genricName = buildStep.Name as GenericNameSyntax;
 
 			return genricName.TypeArgumentList.Arguments[0].ToString();
-		}
-
-		static List<World> GetWorlds(MemberAccessExpressionSyntax step)
-		{
-			List<World> models = new();
-
-			var parentExpression = step.Parent as InvocationExpressionSyntax;
-			var lambda = parentExpression.ArgumentList.Arguments.Single().Expression as SimpleLambdaExpressionSyntax;
-
-			foreach (var system in lambda.Block.Statements.Where(x => x is ExpressionStatementSyntax).Cast<ExpressionStatementSyntax>())
-			{
-				if (system.Expression is not InvocationExpressionSyntax invocation)
-					continue;
-
-				if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
-					continue;
-
-				if (memberAccess.Name is not GenericNameSyntax genericName)
-					continue;
-
-				if (genericName.Identifier.Text != "World")
-					continue;
-
-				if (invocation.ArgumentList.Arguments.Count == 0)
-					continue;
-
-				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
-				var nameToken = nameArg.Token.ValueText;
-
-				var archTypes = WorldGenerator.GetWorldArchTypes(genericName);
-
-				models.Add(new World()
-				{
-					name = nameToken,
-					archTypes = archTypes
-				});
-			}
-
-			return models;
 		}
 	}
 }

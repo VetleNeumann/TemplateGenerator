@@ -6,19 +6,24 @@ namespace $namespace
 	public partial class $name
 	{
 		$archTypes~>ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n		<~
+		
+		$resourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName;<~~>\n		<~
 
-		public $name()
+		public $name($resourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~~>, <~)
 		{
 			$archTypes~>container|$archTypeName| = new ArchTypeContainer<$archTypeName>();<~~>\n			<~
+
+			$resourceManagers~>this.|$resourceManagerName| = $resourceManagerName;<~~>\n		<~
 		}
 
 		$worlds~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public $worldName Get|$worldName|()
 		{
-			return new |$worldName|($worldArchTypes~>ref container|$archTypeName|<~~>, <~);
+			return new |$worldName|($worldArchTypes~>ref container|$archTypeName|<~~>, <~$worldResourceManagers~>, $resourceManagerName<~);
 		}<~~>\n\n		<~
 	}
 
+	/*
 	static class |$name|_Intercept
 	{
 		[InterceptsLocation(@"|$path|", $line, $character)]
@@ -29,4 +34,5 @@ namespace $namespace
 			return new $name();
 		}
 	}
+	*/
 }

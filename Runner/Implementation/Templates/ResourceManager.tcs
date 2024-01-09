@@ -1,6 +1,7 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
+using EnCS.Attributes;
 
 // TODO: Refactor when template import is supported in language
 namespace $namespace
@@ -8,7 +9,7 @@ namespace $namespace
 	public partial class $name
 	{
 		$resourceManagers~>[Component]
-		public struct $resourceManagerType : IComponent<$resourceManagerType, |$resourceManagerType|.Vectorized, |$resourceManagerType|.Array>
+		public struct $resourceManagerInType : IComponent<$resourceManagerInType, |$resourceManagerInType|.Vectorized, |$resourceManagerInType|.Array>
 		{
 			public uint id;
 
@@ -22,39 +23,43 @@ namespace $namespace
 			{
 				public const int Size = 8;
 
-				public FixedArray8<uint> x;
+				public FixedArray8<uint> id;
 			}
 
 			public ref struct Ref
 			{
-				public ref uint id;
-			
-				public Ref(ref float id)
+				public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| |$resourceManagerInType| => ref resourceManager.Get(id);
+
+				ref uint id;
+				$resourceManagerName resourceManager;
+
+				public Ref(ref uint id, $resourceManagerName resourceManager)
 				{
 					this.id = ref id;
+					this.resourceManager = resourceManager;
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public void Set(in |$resourceManagerType| data)
+				public void Set(in |$resourceManagerTypeNamespace|.|$resourceManagerInType| data)
 				{
-					this.id = data.id;
+					this.id = resourceManager.Store(data);
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public static Ref FromArray(ref Array array, int idx)
+				public static Ref FromArray(ref Array array, int idx, $resourceManagerName resourceManager)
 				{
-					return new Ref(ref array.id[idx]);
+					return new Ref(ref array.id[idx], resourceManager);
 				}
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerType|, Vectorized, Array>
+			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
 			{
 				return ref TArch.GetVec(ref arch);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerType|, Vectorized, Array>
+			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
 			{
 				return ref TArch.GetSingle(ref arch);
 			}

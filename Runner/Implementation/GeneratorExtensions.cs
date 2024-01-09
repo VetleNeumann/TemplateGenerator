@@ -8,6 +8,20 @@ namespace EnCS.Generator
 {
 	public static class GeneratorExtensions
 	{
+		public static string GetName(this NameSyntax name)
+		{
+			if (name is SimpleNameSyntax s)
+			{
+				return s.Identifier.Text;
+			}
+			else if (name is QualifiedNameSyntax q)
+			{
+				return q.Right.Identifier.Text;
+			}
+
+			throw new Exception("Unknown name type.");
+		}
+
 		public static string GetNamespace(this SyntaxNode syntax)
 		{
 			// If we don't have a namespace at all we'll return an empty string
