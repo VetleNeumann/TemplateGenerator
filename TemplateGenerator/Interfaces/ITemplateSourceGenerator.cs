@@ -7,16 +7,16 @@ using System.Collections.Generic;
 
 namespace TemplateGenerator
 {
-	public interface ITemplateSourceGenerator<TNode> where TNode : SyntaxNode
+	public interface ITemplateSourceGenerator<TNode, TData> where TNode : SyntaxNode where TData : struct, IEquatable<TData>
 	{
 		string Template { get; }
 
-		bool Filter(TNode node);
+		TData? Filter(TNode node, SemanticModel semanticModel);
 
-		//Model<ReturnType> CreateModel(Compilation compilation, TNode node);
+		bool TryCreateModel(TData data, out Model<ReturnType> model, out List<Diagnostic> diagnostics);
 
-		bool TryCreateModel(Compilation compilation, TNode node, out Model<ReturnType> model, out List<Diagnostic> diagnostics);
+		string GetName(TData data);
 
-		string GetName(TNode node);
+		Location GetLocation(TData data);
 	}
 }

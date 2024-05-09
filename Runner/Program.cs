@@ -7,10 +7,31 @@ namespace Runner
 	{
 		static void Main(string[] args)
 		{
+			string attribSource = @"
+namespace EnCS.Attributes
+{
+	public class ComponentAttribute : Attribute
+	{
+
+	}
+}
+";
+
 			string source = @"
 using namespace Project.Primitives;
 
+public enum CompEnum
+{
+	Val1,
+	Val2
+}
+
 public struct TestContext
+{
+	public float data;
+}
+
+public struct TestContext2
 {
 	public float data;
 }
@@ -59,6 +80,7 @@ public partial struct Position
 	public int x;
 	public int y;
 	public FixedArray4<int> z;
+	public CompEnum e;
 }
 
 [ComponentAttribute]
@@ -80,13 +102,13 @@ public partial struct Scale
 	public static implicit operator Scale(Vector2 v) => new Scale(v.X, v.Y, 0);
 }
 
-[SystemAttribute<TestContext>]
-[UsingResource<MeshResourceManager>]
+[SystemAttribute<TestContext, TestContext2>]
 [UsingResource<TestResourceManager>]
+[UsingResource<MeshResourceManager>]
 public partial class ResourceSystem
 {
 	[SystemPreLoop, SystemLayer(0)]
-	public void PreLoop1()
+	public void PreLoop1(ref TestContext context)
 	{
 
 	}
@@ -241,7 +263,8 @@ namespace Test
 ";
 
 			SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);
-			CSharpCompilation compilation = CSharpCompilation.Create("Tests", new[] { syntaxTree });
+			SyntaxTree attribTree = CSharpSyntaxTree.ParseText(attribSource);
+			CSharpCompilation compilation = CSharpCompilation.Create("Tests", new[] { syntaxTree, attribTree });
 
 			GeneratorDriver driver = CSharpGeneratorDriver.Create(new EnCS.Generator.TemplateGenerator());
 			for (int i = 0; i < 100; i++)

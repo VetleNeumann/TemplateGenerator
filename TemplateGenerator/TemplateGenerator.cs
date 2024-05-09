@@ -7,9 +7,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -36,63 +38,93 @@ namespace TemplateGenerator
 			{ EngineState.Variable,   new VariableState() },
 		};
 
-		public static void RegisterTemplateGenerator<TNode>(IncrementalGeneratorInitializationContext context, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
+		public static void RegisterTemplateGenerator<TNode, TData>(IncrementalGeneratorInitializationContext context, ITemplateSourceGenerator<TNode, TData> generator) where TNode : SyntaxNode where TData : struct, IEquatable<TData>
 		{
-			var generatorNodes = context.SyntaxProvider
-				.CreateSyntaxProvider(
-					(x, _) => x is TNode t && generator.Filter(t),
-					(x, _) => x.Node as TNode
-				).Where(x => x is not null)
-				.Collect();
-			
-			var combinaton = context.CompilationProvider.Combine(generatorNodes);
-			context.RegisterSourceOutput(combinaton, (spc, source) => ExecuteGenerator(source.Left, source.Right, spc, generator));
-		}
-
-		public static void ExecuteGenerator<TNode>(Compilation compilation, ImmutableArray<TNode> nodeArray, SourceProductionContext generatorContext, ITemplateSourceGenerator<TNode> generator) where TNode : SyntaxNode
-		{
-			if (nodeArray.IsDefaultOrEmpty)
-				return;
-			
-			var template = generator.Template.AsSpan();
-			foreach (TNode node in nodeArray.Distinct())
+			TData? Filter(GeneratorSyntaxContext x, CancellationToken cancellationToken)
 			{
-				ModelStack<ReturnType> stack = new ModelStack<ReturnType>();
-
-				bool modelResult;
-				List<Diagnostic> diagnostics;
-				Model<ReturnType> model;
 				try
 				{
-					modelResult = generator.TryCreateModel(compilation, node, out model, out diagnostics);
+					return generator.Filter(x.Node as TNode, x.SemanticModel);
 				}
 				catch (Exception e)
 				{
-                    throw new Exception($"Generator '{generator.GetName(node)}' failed with:\n {e.ToString()}");
+					throw new Exception($"Generator filter failed at '{x.Node.ToFullString()}' with:\n {e.Message},\n{e.StackTrace}");
 				}
-				
-				foreach (var diagnostic in diagnostics.GroupBy(x => (x.Id, x.Location)).Select(x => x.First()))
-					generatorContext.ReportDiagnostic(diagnostic);
-
-				if (!modelResult)
-					continue;
-
-				stack.Push(model);
-
-				var renderResult = TryRenderTemplate(template, stack, out string result);
-				if (!renderResult.Ok)
-				{
-					var errorSb = new StringBuilder("\n");
-					for (int i = 0; i < renderResult.Errors.Count; i++)
-					{
-						errorSb.Append($"\t{renderResult.Lines[i]}: {renderResult.Errors[i]}\n");
-					}
-
-					generatorContext.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.TemplateFailed, node.GetLocation(), $"{generator.GetName(node)}.g.cs", errorSb.ToString()));
-				}
-
-				generatorContext.AddSource($"{generator.GetName(node)}.g.cs", SourceText.From(result, Encoding.UTF8));
 			}
+
+			var generatorNodes = context.SyntaxProvider
+				.CreateSyntaxProvider(
+					(x, _) => x is TNode t,
+					Filter
+				).Where(x => x is not null);
+
+			context.RegisterSourceOutput(generatorNodes, (spc, data) => ExectureGeneratorNew(spc, data ?? default, generator)); // Data is filtered before so should not be null
+		}
+
+		public static void RegisterAttributeTemplateGenerator<TNode, TData>(string attribute, IncrementalGeneratorInitializationContext context, ITemplateSourceGenerator<TNode, TData> generator) where TNode : SyntaxNode where TData : struct, IEquatable<TData>
+		{
+			TData? Filter(GeneratorAttributeSyntaxContext x, CancellationToken cancellationToken)
+			{
+				try
+				{
+					return generator.Filter(x.TargetNode as TNode, x.SemanticModel);
+				}
+				catch (Exception e)
+				{
+					throw new Exception($"Generator filter failed at '{x.TargetNode.ToFullString()}' with:\n {e.Message},\n{e.StackTrace}");
+				}
+			}
+
+            var generatorNodes = context.SyntaxProvider
+				.ForAttributeWithMetadataName(
+					attribute,
+					(x, _) => x is TNode t,
+					Filter
+				).Where(x => x is not null);
+
+			context.RegisterSourceOutput(generatorNodes, (spc, data) => ExectureGeneratorNew(spc, data ?? default, generator)); // Data is filtered before so should not be null
+		}
+
+		public static void ExectureGeneratorNew<TNode, TData>(SourceProductionContext context, TData data, ITemplateSourceGenerator<TNode, TData> generator) where TNode : SyntaxNode where TData : struct, IEquatable<TData>
+		{
+			bool modelResult;
+			List<Diagnostic> diagnostics;
+			Model<ReturnType> model;
+
+
+			try
+			{
+				modelResult = generator.TryCreateModel(data, out model, out diagnostics);
+			}
+			catch (Exception e)
+			{
+				throw new Exception($"Generator '{generator.GetName(data)}' failed with:\n {e.ToString()}");
+			}
+
+			foreach (var diagnostic in diagnostics.GroupBy(x => (x.Id, x.Location)).Select(x => x.First()))
+				context.ReportDiagnostic(diagnostic);
+
+			if (!modelResult)
+				return;
+
+			ModelStack<ReturnType> stack = new ModelStack<ReturnType>();
+			stack.Push(model);
+
+			var template = generator.Template.AsSpan();
+			var renderResult = TryRenderTemplate(template, stack, out string result);
+
+			if (!renderResult.Ok)
+			{
+				var errorSb = new StringBuilder("\n");
+				for (int i = 0; i < renderResult.Errors.Count; i++)
+				{
+					errorSb.Append($"\t{renderResult.Lines[i]}: {renderResult.Errors[i]}\n");
+				}
+
+				context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.TemplateFailed, generator.GetLocation(data), $"{generator.GetName(data)}.g.cs", errorSb.ToString()));
+			}
+
+			context.AddSource($"{generator.GetName(data)}.g.cs", SourceText.From(result, Encoding.UTF8));
 		}
 
 		public static ComputeResult TryRenderTemplate(ReadOnlySpan<char> template, ModelStack<ReturnType> stack, out string result)
