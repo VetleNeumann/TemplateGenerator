@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
@@ -19,7 +20,7 @@ namespace EnCS.Generator
 		public static readonly DiagnosticDescriptor ComponentMustBePartial = new("ECS002", "Component struct must be partial", "Component struct is not partial", "ComponentGenerator", DiagnosticSeverity.Error, true);
 	}
 
-	struct ComponentGeneratorData : IEquatable<ComponentGeneratorData>
+	struct ComponentGeneratorData : IEquatable<ComponentGeneratorData>, ITemplateData
 	{
 		public StructDeclarationSyntax node;
 		public Compilation compilation;
@@ -36,6 +37,11 @@ namespace EnCS.Generator
 		public bool Equals(ComponentGeneratorData other)
 		{
 			return members.Equals(other.members);
+		}
+
+		public string GetIdentifier()
+		{
+			return $"ComponentGenerator ({node.Identifier}) ({node.GetLocation()})";
 		}
 	}
 
@@ -59,18 +65,24 @@ namespace EnCS.Generator
 			//var membersResult = TryGetMembers(compilation, node, diagnostics, out var members);
 			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.members.Select(x => x.GetModel())));
 
+			diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, Location.None, "terst"));
+
 			return true;
 		}
 
-		public ComponentGeneratorData? Filter(StructDeclarationSyntax node, SemanticModel semanticModel)
+		public bool TryGetData(StructDeclarationSyntax node, SemanticModel semanticModel, out ComponentGeneratorData data, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new();
+			Unsafe.SkipInit(out data);
+
 			if (semanticModel.GetDeclaredSymbol(node) is not INamedTypeSymbol typeSymbol)
-				return null;
+				return false;
 
 			if (!TryGetMembers(typeSymbol, out var members))
-				return null;
+				return false;
 
-			return new ComponentGeneratorData(node, semanticModel.Compilation, new(members.ToArray()));
+			data = new ComponentGeneratorData(node, semanticModel.Compilation, new(members.ToArray()));
+			return true;
 		}
 
 		public string GetName(ComponentGeneratorData data)
@@ -110,6 +122,8 @@ namespace EnCS.Generator
 				});
 			}
 
+			return true;
+			Console.WriteLine($"{!hasProperties} | {members.Count > 0}");
 			return !hasProperties && members.Count > 0;
 		}
 

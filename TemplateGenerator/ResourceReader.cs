@@ -17,10 +17,10 @@ namespace TemplateGenerator
 			var assemblies = GetAssemblies();
 			var assembly = assemblies.Where(x => x.GetManifestResourceNames().Where(r => r.EndsWith(endWith)).Any());
 
-			if (assembly.Count() > 1)
-				throw new InvalidOperationException($"There is more then one assembly with a resource that ends with '{endWith}'");
+			//if (assembly.Count() > 1)
+			//	throw new InvalidOperationException($"There is more then one assembly with a resource that ends with '{endWith}'");
 
-			var resources = assembly.Single().GetManifestResourceNames().Where(r => r.EndsWith(endWith));
+			var resources = assembly.First().GetManifestResourceNames().Where(r => r.EndsWith(endWith));
 
 			if (!resources.Any())
 				throw new InvalidOperationException($"There is no resources that ends with '{endWith}'");
@@ -30,7 +30,7 @@ namespace TemplateGenerator
 
 			var resourceName = resources.Single();
 
-			return ReadEmbededResource(assembly.Single(), resourceName);
+			return ReadEmbededResource(assembly.First(), resourceName);
 		}
 
 		private static IEnumerable<Assembly> GetAssemblies()

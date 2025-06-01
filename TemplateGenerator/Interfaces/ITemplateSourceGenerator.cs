@@ -11,7 +11,7 @@ namespace TemplateGenerator
 	{
 		string Template { get; }
 
-		TData? Filter(TNode node, SemanticModel semanticModel);
+		bool TryGetData(TNode node, SemanticModel semanticModel, out TData data, out List<Diagnostic> diagnostics);
 
 		bool TryCreateModel(TData data, out Model<ReturnType> model, out List<Diagnostic> diagnostics);
 

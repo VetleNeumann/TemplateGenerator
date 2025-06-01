@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using TemplateGenerator;
 
 namespace Runner
 {
@@ -266,13 +267,12 @@ namespace Test
 			SyntaxTree attribTree = CSharpSyntaxTree.ParseText(attribSource);
 			CSharpCompilation compilation = CSharpCompilation.Create("Tests", new[] { syntaxTree, attribTree });
 
+			Console.WriteLine(compilation.GetDiagnostics().Length);
 			GeneratorDriver driver = CSharpGeneratorDriver.Create(new EnCS.Generator.TemplateGenerator());
-			for (int i = 0; i < 100; i++)
-			{
-                Console.WriteLine(i);
-                driver.RunGenerators(compilation);
-			}
+            driver = driver.RunGenerators(compilation);
+
+			Console.WriteLine(compilation.GetDiagnostics().Length);
             Console.WriteLine("Done!");
-        }
+		}
 	}
 }
