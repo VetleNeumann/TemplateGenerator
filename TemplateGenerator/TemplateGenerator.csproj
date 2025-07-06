@@ -4,15 +4,21 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>Latest</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<EnablePackageValidation>true</EnablePackageValidation>
 
 		<!-- Nuget -->
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageId>TemplateGen</PackageId>
+		<PackageId>Henke.TemplateGenerator</PackageId>
+		<Author>Henrik9864</Author>
+		<Company>Henke</Company>
 		<Version>1.0.78</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 	
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" PrivateAssets="all" />
+		<None Include="README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 </Project>
