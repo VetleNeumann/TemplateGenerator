@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Allow running the workflow manually from the GitHub UI
   push:
     branches:
-      - "main"
+      - "master"
   pull_request:
     branches:
       - "*"
