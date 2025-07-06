@@ -6,6 +6,9 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<EnablePackageValidation>true</EnablePackageValidation>
 
+		<!-- MinVer -->
+		<MinVerTagPrefix>v</MinVerTagPrefix>
+		
 		<!-- Nuget -->
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageId>Henke.TemplateGenerator</PackageId>
