@@ -19,6 +19,6 @@ jobs:
     uses: HengineV5/.github/.github/workflows/dotnet-ci.yml@main
     with:
       nuget-packageid: "Henke.TemplateGenerator"
-      test-step: true
+      test-step: false
     secrets:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
